@@ -675,6 +675,8 @@ figure.aud figcaption{font-size:13px;color:var(--muted);margin-top:2px}
 @media (prefers-reduced-motion:reduce){.ad-door{transition:none}}
 .job-tile{width:90px;height:90px;flex:none;border-radius:12px;background:#fff3c4;border:2.5px solid #e2b93a;color:#1c7a43;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.15)}
 .job-tile svg{width:70%;height:70%}
+.solo-instr{font-size:14px;line-height:1.45;color:#44474b;margin:0 0 4px}
+.solo-instr b{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1139,11 +1141,11 @@ function vRound(key){
   const ap=acting?ps.find(p=>p.id===acting):null;
   return `<div class="round-head"><div class="eyebrow">Round ${r.n} of 5 · Chapter ${r.n} of her story</div><h2>${esc(r.title)}</h2><p>${esc(r.blurb)}</p>${slrow('Director: you &amp; your friends',r.n,1)}</div>
   ${g.cues&&g.cues[key]?`<div class="cue"><span class="cue-l">Host cue</span>${esc(g.cues[key])}</div>`:''}
-  <div class="paper cream"><div class="mech"><div class="ico">${ic(m.icon)}</div><div><b>${esc(m.label)}</b>${m.prop&&g.mechanics[key]!=='custom'?` <span class="tag">${esc(m.prop)}</span>`:''}<p class="small" style="margin:4px 0 0">${esc(instr)}</p></div></div></div>
-  ${ap?vPicker(key,ap):''}
+  ${g.solo?'':`<div class="paper cream"><div class="mech"><div class="ico">${ic(m.icon)}</div><div><b>${esc(m.label)}</b>${m.prop&&g.mechanics[key]!=='custom'?` <span class="tag">${esc(m.prop)}</span>`:''}<p class="small" style="margin:4px 0 0">${esc(instr)}</p></div></div></div>`}
+  ${g.solo&&ps[0]?(isDone(ps[0],key)?`<div class="paper center solo-done"><div class="eyebrow">You got</div><div class="reveal-title" style="margin:6px 0 10px">${esc(resultLabel(key,ps[0]))}</div><button class="btn small" data-act="showReveal" data-key="${key}" data-id="${ps[0].id}">See it again</button></div>`:vPicker(key,ps[0])):`${ap?vPicker(key,ap):''}
   <div class="paper"><h3>${ap?'Everyone else':'Whose turn?'}</h3><ul class="plist">${ps.map(p=>{const done=isDone(p,key);const res=resultLabel(key,p);
     return `<li><span class="dot" style="background:${p.color}"></span><div><div class="pname">${esc(p.name)}</div>${done?`<div class="pres">${esc(res)}</div>`:''}</div><span class="spacer"></span>
-    ${done?`<button class="link small" data-act="showReveal" data-key="${key}" data-id="${p.id}">See</button>${isHost()?`<button class="link small" data-act="redo" data-key="${key}" data-id="${p.id}">Redo</button>`:''}`:canAct(p)?`<button class="btn small ${p.id===acting?'gold':''}" data-act="takeTurn" data-id="${p.id}">${p.id===acting?'Up now':'Take turn'}</button>`:'<span class="small muted">Waiting…</span>'}</li>`;}).join('')}</ul></div>`;
+    ${done?`<button class="link small" data-act="showReveal" data-key="${key}" data-id="${p.id}">See</button>${isHost()?`<button class="link small" data-act="redo" data-key="${key}" data-id="${p.id}">Redo</button>`:''}`:canAct(p)?`<button class="btn small ${p.id===acting?'gold':''}" data-act="takeTurn" data-id="${p.id}">${p.id===acting?'Up now':'Take turn'}</button>`:'<span class="small muted">Waiting…</span>'}</li>`;}).join('')}</ul></div>`}`;
 }
 function resultLabel(key,p){
   const c=C();
@@ -1156,7 +1158,7 @@ function resultLabel(key,p){
 function vPicker(key,p){
   const g=S.game,m=mechOf(key),c=C();
   let inner='';
-  const head=`<div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s turn</h3><span class="spacer"></span><button class="link small" data-act="cancelTurn">Close</button></div>`;
+  const head=g.solo?`<div class="solo-instr"><b>${esc(m.label)}</b> · ${esc(g.mechanics[key]==='custom'?(g.custom&&g.custom[key])||m.instr:m.instr)}</div>`:`<div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s turn</h3><span class="spacer"></span><button class="link small" data-act="cancelTurn">Close</button></div>`;
   if(key==='name'){
     const step=p.first==null?'first':'last';
     const list=step==='first'?c.firstNames:c.lastNames;
