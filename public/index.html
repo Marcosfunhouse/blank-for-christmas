@@ -730,7 +730,7 @@ const PRESETS={
   adventMatch:{label:'Advent calendar match',icon:'gift',kind:'random',style:'advent',prop:null,instr:'Open two doors and match the pictures. Make a match and the studio draws your calling at random. Three tries, then the studio picks for you anyway.'},
   digitalDeal:{label:'Deal a digital card',icon:'cards',kind:'random',style:'cards',prop:null,instr:'Tap to be dealt a card. Your rank is your calling.'},
   realVillage:{label:'Pick a real house',icon:'house',kind:'choose',style:'houses',prop:'A Christmas village or decorations',instr:"Label the houses in your Christmas village (or any decorations around the room) with these names or numbers. Walk up, choose the one that calls to your soul, then tap it. Will this be where you meet the man of your dreams?"},
-  mysteryHouses:{label:'Mystery cottages on screen',icon:'house',kind:'choose',style:'houses',prop:null,instr:'Choose a cottage. Its secret is your reason for coming home.'},
+  mysteryHouses:{label:'Mystery cottages on screen',icon:'house',kind:'choose',style:'houses',prop:null,instr:'Choose a cottage. Its secret is your reason for coming home. The studio reshuffles which secret hides where every game.'},
   beerPong:{label:'Ping pong cup toss',icon:'cup',kind:'choose',style:'cups',prop:'Solo cups + ping pong balls',instr:'Set the cups up in a triangle and number them. Take your shot! Whatever cup you sink is your destined love interest. Tap it. Once he\'s chosen, he\'s off the market.'},
   digitalScratch:{label:'Scratch-off ticket',icon:'ticket',kind:'random',style:'scratch',prop:null,instr:'Scratch the 8 spots. Match three of the same face and you win yourself a man.'},
   digitalToss:{label:'Digital cup toss',icon:'cup',kind:'random',style:'cups',prop:null,instr:'Tap to toss the ball. Wherever it lands is your destiny.'},
@@ -807,6 +807,8 @@ const rid=(n=8)=>Math.random().toString(36).slice(2,2+n)+Math.random().toString(
 const clone=o=>JSON.parse(JSON.stringify(o));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function code4(){const L='BCDFGHJKLMNPQRSTVWXZ';let s='';for(let i=0;i<4;i++)s+=L[Math.floor(Math.random()*L.length)];return s;}
+function seededShuffle(a,seed){let h=2166136261;for(const ch of String(seed)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}let x=h>>>0;const rnd=()=>{x=(x+0x6D2B79F5)>>>0;let t=x;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function poss(n){n=String(n||'').trim();return /^you$/i.test(n)?'Your':esc(n)+(/s$/i.test(n)?'’':'’s');}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function isObj(v){return v&&typeof v==='object'&&!Array.isArray(v);}
 function merge(t,p){const o=isObj(t)?{...t}:{};for(const k in p){const v=p[k];if(isObj(v)&&isObj(o[k]))o[k]=merge(o[k],v);else o[k]=v;}return o;}
@@ -1158,7 +1160,7 @@ function resultLabel(key,p){
 function vPicker(key,p){
   const g=S.game,m=mechOf(key),c=C();
   let inner='';
-  const head=g.solo?`<div class="solo-instr"><b>${esc(m.label)}</b> · ${esc(g.mechanics[key]==='custom'?(g.custom&&g.custom[key])||m.instr:m.instr)}</div>`:`<div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s turn</h3><span class="spacer"></span><button class="link small" data-act="cancelTurn">Close</button></div>`;
+  const head=g.solo?`<div class="solo-instr"><b>${esc(m.label)}</b> · ${esc(g.mechanics[key]==='custom'?(g.custom&&g.custom[key])||m.instr:m.instr)}</div>`:`<div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${poss(p.name)} turn</h3><span class="spacer"></span><button class="link small" data-act="cancelTurn">Close</button></div>`;
   if(key==='name'){
     const step=p.first==null?'first':'last';
     const list=step==='first'?c.firstNames:c.lastNames;
@@ -1192,6 +1194,9 @@ function vPicker(key,p){
   const style=m.style;
   if(style==='cards'){
     inner=`<div class="grid g-cards">${items.map(it=>{const t=taken[it.i];const rk=RANKS[it.i]||String(it.i+1);const red=it.i%2===0;return `<button class="pcard ${red?'red':''} ${t?'taken':''}" ${t?'disabled':''} data-act="choose" data-key="${key}" data-id="${p.id}" data-i="${it.i}"><span class="rk">${rk}${SUITS[it.i%4]}</span><span class="lb">${esc(it.label)}</span>${t?`<span class="owner">${esc(t.name)}</span>`:''}</button>`;}).join('')}</div>`;
+  } else if(style==='houses'&&g.mechanics[key]==='mysteryHouses'){
+    const order=seededShuffle(items,(g.createdAt||g.code||'x')+'|'+key);
+    inner=`<div class="grid g-houses">${order.map((it,pos)=>{const t=taken[it.i];return `<button class="house ${t?'taken':''}" ${t?'disabled':''} data-act="choose" data-key="${key}" data-id="${p.id}" data-i="${it.i}">${houseSVG(pos)}<div class="hn">Cottage ${pos+1}</div>${t?`<div class="owner">${esc(t.name)}</div>`:''}</button>`;}).join('')}</div>`;
   } else if(style==='houses'){
     inner=`<div class="grid g-houses">${items.map(it=>{const t=taken[it.i];return `<button class="house ${t?'taken':''}" ${t?'disabled':''} data-act="choose" data-key="${key}" data-id="${p.id}" data-i="${it.i}">${houseSVG(it.i)}<div class="hn">${esc(it.place||('Cottage '+(it.i+1)))}</div>${t?`<div class="owner">${esc(t.name)}</div>`:''}</button>`;}).join('')}</div>`;
   } else if(style==='cups'){
@@ -1215,7 +1220,7 @@ function twistMode(){return (S.game&&S.game.mechanics&&S.game.mechanics.twist)||
 function vTwistPaper(){
   const g=S.game,ps=plist(),c=C();const w=S.ui.drawnFor&&S.players[S.ui.drawnFor]?S.ui.drawnFor:null;let top='';
   if(w){const p=S.players[w];const dr=S.ui.slipDraft||(S.ui.slipDraft={});const a=dr[w]||(dr[w]=(p.drawnSlip&&p.drawnSlip.answers?p.drawnSlip.answers.slice():['','','']));
-    top=`<div class="paper"><div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s drawn slip</h3><span class="spacer"></span><button class="link small" data-act="closeDrawn">Close</button></div><p class="small muted">Copy in the slip you pulled from the hat, so it shows on your movie card and the poster.</p>
+    top=`<div class="paper"><div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${poss(p.name)} drawn slip</h3><span class="spacer"></span><button class="link small" data-act="closeDrawn">Close</button></div><p class="small muted">Copy in the slip you pulled from the hat, so it shows on your movie card and the poster.</p>
      ${c.twistQuestions.map((q,i)=>`<label class="f">${i+1}. ${esc(q)}</label><textarea class="t" rows="2" data-k="dslip${w}${i}" data-slip="${w}" data-i="${i}">${esc(a[i])}</textarea>`).join('')}
      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="saveDrawn" data-id="${w}">Save my slip</button></div></div>`;}
   const qs=`<div class="paper cream"><div class="eyebrow">Grab a slip of paper and a pen</div><h3>Answer these in secret</h3><ol class="twistq">${c.twistQuestions.map(q=>`<li>${esc(q)}</li>`).join('')}</ol>
@@ -1236,7 +1241,7 @@ function vTwist(){
   let top='';
   if(!drawn&&w){
     const p=S.players[w];const dr=S.ui.slipDraft||(S.ui.slipDraft={});const a=dr[w]||(dr[w]=['','','']);
-    top=`<div class="paper"><div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s secret slip</h3><span class="spacer"></span><button class="link small" data-act="closeSlip">Close</button></div>
+    top=`<div class="paper"><div class="row"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${poss(p.name)} secret slip</h3><span class="spacer"></span><button class="link small" data-act="closeSlip">Close</button></div>
      <p class="small muted">${S.store.online&&p.controller===S.myUid&&!isHost()?'Only you can see this until it goes in the hat.':'Hand the device to '+esc(p.name)+'. Everyone else, eyes off the screen.'}</p>
      ${c.twistQuestions.map((q,i)=>`<label class="f">${i+1}. ${esc(q)}${sugBtn(`data-kind="slip" data-pid="${w}" data-qi="${i}"`,'Stuck? Suggest one')}</label><textarea class="t" rows="2" data-k="slip${w}${i}" data-slip="${w}" data-i="${i}">${esc(a[i])}</textarea>`).join('')}
      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="submitSlip" data-id="${w}">Fold it up & toss it in the hat</button></div></div>`;
@@ -1260,7 +1265,7 @@ function vPrep(){
   return `<div class="round-head"><div class="eyebrow">The writers' room</div><h2>Write your pitch</h2><p>Combine all your elements (your name, your job, your crisis, your hunk and your twist) into a blockbuster Christmas movie pitch. Use every detail from your slip, then add as much extra drama as you like.</p>${slrow('The writers\' room',6,1)}</div>
   <div class="timer" data-timer="prep">${fmt(timerOf(S.game.prep))}</div>${timerCtl('prep')}
   ${(()=>{const open=S.ui.pitchFor&&S.players[S.ui.pitchFor]?S.ui.pitchFor:(S.store.online&&!isHost()&&mine.length===1?mine[0].id:null);
-    return (open?pitchForm({id:open,...S.players[open]}):'')+`<div class="mcards" style="margin-top:16px">${mine.filter(p=>p.id!==open).map(p=>movieCard(p)+(canAct(p)?`<div class="tctl row" style="justify-content:center;margin:-6px 0 6px"><button class="btn small gold" data-act="openPitch" data-id="${p.id}">${p.pitch&&p.pitch.title?'Edit':'Write'} ${esc(p.name)}'s pitch</button></div>`:'')).join('')}</div>`;})()}`;
+    return (open?pitchForm({id:open,...S.players[open]}):'')+`<div class="mcards" style="margin-top:16px">${mine.filter(p=>p.id!==open).map(p=>movieCard(p)+(canAct(p)?`<div class="tctl row" style="justify-content:center;margin:-6px 0 6px"><button class="btn small gold" data-act="openPitch" data-id="${p.id}">${p.pitch&&p.pitch.title?'Edit':'Write'} ${poss(p.name)} pitch</button></div>`:'')).join('')}</div>`;})()}`;
 }
 function vPitch(){
   const g=S.game,ps=plist();const pit=g.pitchOrder||[];const i=g.pitchIdx||0;const cur=S.players[pit[i]];
@@ -1376,9 +1381,9 @@ $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();}
 function revealHTML(key,p){
   const c=C();
   if(key==='name')return `<div class="eyebrow">Introducing</div><div class="reveal-title">${esc(fullName(p))}</div><p class="muted">Write it on your name tag and embrace your new, cheerful persona!</p>`;
-  if(key==='career'){const i=p.career;return `<div class="eyebrow">${esc(p.name)}'s holiday calling</div><div class="row" style="margin:12px 0">${mechOf('career').style==='cards'?`<div class="pcard ${i%2===0?'red':''}" style="width:90px;cursor:default"><span class="rk">${RANKS[i]||i+1}${SUITS[i%4]}</span></div>`:`<div class="job-tile">${jobIcon(jobIconKey(c.careers[i],i))}</div>`}<div class="reveal-title" style="flex:1">${esc(c.careers[i])}</div></div><p class="muted">Is it your true calling, or the very career you left the big city to escape?</p>`;}
-  if(key==='motive'){const m=c.motives[p.motive];return `<div class="eyebrow">${esc(p.name)}'s Christmas motive</div><div class="reveal-place">${esc(m.place)}</div><div class="reveal-title">${esc(m.title)}</div><p>${esc(m.text)}</p>`;}
-  if(key==='hunk'){const h=c.hunks[p.hunk];return `<div class="eyebrow">${esc(p.name)}'s holiday hunk</div><div class="reveal-title">${esc(h.title)}</div>${h.line?`<div class="quote">"${esc(h.line)}"</div>`:''}${h.backstory?`<div class="kv"><b>Backstory</b>${esc(h.backstory)}</div>`:''}${h.vibe?`<div class="kv"><b>Vibe</b>${esc(h.vibe)}</div>`:''}${h.redflag?`<div class="kv"><b>Red flag</b>${esc(h.redflag)}</div>`:''}${h.verdict?`<div class="kv"><b>The verdict</b>${esc(h.verdict)}</div>`:''}`;}
+  if(key==='career'){const i=p.career;return `<div class="eyebrow">${poss(p.name)} holiday calling</div><div class="row" style="margin:12px 0">${mechOf('career').style==='cards'?`<div class="pcard ${i%2===0?'red':''}" style="width:90px;cursor:default"><span class="rk">${RANKS[i]||i+1}${SUITS[i%4]}</span></div>`:`<div class="job-tile">${jobIcon(jobIconKey(c.careers[i],i))}</div>`}<div class="reveal-title" style="flex:1">${esc(c.careers[i])}</div></div><p class="muted">Is it your true calling, or the very career you left the big city to escape?</p>`;}
+  if(key==='motive'){const m=c.motives[p.motive];return `<div class="eyebrow">${poss(p.name)} Christmas motive</div><div class="reveal-place">${esc(m.place)}</div><div class="reveal-title">${esc(m.title)}</div><p>${esc(m.text)}</p>`;}
+  if(key==='hunk'){const h=c.hunks[p.hunk];return `<div class="eyebrow">${poss(p.name)} holiday hunk</div><div class="reveal-title">${esc(h.title)}</div>${h.line?`<div class="quote">"${esc(h.line)}"</div>`:''}${h.backstory?`<div class="kv"><b>Backstory</b>${esc(h.backstory)}</div>`:''}${h.vibe?`<div class="kv"><b>Vibe</b>${esc(h.vibe)}</div>`:''}${h.redflag?`<div class="kv"><b>Red flag</b>${esc(h.redflag)}</div>`:''}${h.verdict?`<div class="kv"><b>The verdict</b>${esc(h.verdict)}</div>`:''}`;}
   return '';
 }
 function showReveal(key,p,celebrate){modal(revealHTML(key,p)+`<div class="row" style="margin-top:16px"><span class="spacer"></span><button class="btn primary" data-act="closeModal">${celebrate?'Love it':'Close'}</button></div>`);if(celebrate)confetti();}
@@ -1842,7 +1847,7 @@ A.drawHat=async()=>{
   await S.store.updateGame({twists:best.m});confetti();
 };
 A.showTwist=el=>{const p=S.players[el.dataset.id];const src=S.game.twists[el.dataset.id];const s=S.slips[src];const c=C();
-  modal(`<div class="eyebrow">${esc(p.name)}'s twist</div><div class="reveal-title">Drawn from the hat</div>${c.twistQuestions.map((q,i)=>`<div class="kv"><b>${esc(q)}</b>${esc(s.answers[i]||'')}</div>`).join('')}<p class="small muted">Use every detail in your pitch!</p><div class="row"><span class="spacer"></span><button class="btn primary" data-act="closeModal">Got it</button></div>`);};
+  modal(`<div class="eyebrow">${poss(p.name)} twist</div><div class="reveal-title">Drawn from the hat</div>${c.twistQuestions.map((q,i)=>`<div class="kv"><b>${esc(q)}</b>${esc(s.answers[i]||'')}</div>`).join('')}<p class="small muted">Use every detail in your pitch!</p><div class="row"><span class="spacer"></span><button class="btn primary" data-act="closeModal">Got it</button></div>`);};
 A.tStart=async el=>{const n=el.dataset.t;const t=S.game[n];const left=timerOf(t)>0?timerOf(t):(n==='prep'?S.game.settings.prepMin:S.game.settings.pitchMin)*60000;chime.armed=true;try{const A2=window.AudioContext||window.webkitAudioContext;if(A2&&!chime.c)chime.c=new A2();}catch(e){}await S.store.updateGame({[n]:{endsAt:Date.now()+left,left}});};
 A.tPause=async el=>{const n=el.dataset.t;await S.store.updateGame({[n]:{endsAt:null,left:Math.max(0,timerOf(S.game[n]))}});};
 A.tReset=async el=>{const n=el.dataset.t;await S.store.updateGame({[n]:{endsAt:null,left:(n==='prep'?S.game.settings.prepMin:S.game.settings.pitchMin)*60000}});};
@@ -2146,7 +2151,7 @@ function pitchIngredients(p,b){const c=C(),sl=slipOf(p);
    <p class="small muted" style="margin:8px 0 0">Work in as many of these as you can. The twist is where the fun is.</p></div>`;}
 function pitchForm(p){
   const d=pitchDraft(p.id);const b=pitchBits(p);
-  return `<div class="paper pitchsheet"><div class="row" style="flex-wrap:nowrap"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s pitch sheet</h3><span class="spacer"></span><button class="link small" data-act="closePitch">Close</button></div>
+  return `<div class="paper pitchsheet"><div class="row" style="flex-wrap:nowrap"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${poss(p.name)} pitch sheet</h3><span class="spacer"></span><button class="link small" data-act="closePitch">Close</button></div>
   ${pitchIngredients(p,b)}
   <label class="f">Movie title ${sugBtn(`data-kind="pitchTitle" data-pid="${p.id}"`)}</label>
   <input class="t ptitle-in" data-k="pt_${p.id}" data-pitch="${p.id}" data-f="title" maxlength="80" placeholder="e.g. ${esc(b.career)} for Christmas" value="${esc(d.title)}">
