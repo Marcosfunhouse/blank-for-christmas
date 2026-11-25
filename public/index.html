@@ -727,7 +727,7 @@ const PRESETS={
   digitalDice:{label:'Digital dice',icon:'dice',kind:'random',style:'dice',prop:null,instr:'Tap to roll. First roll is your first name, second roll your last.'},
   realDice:{label:'Roll real dice',icon:'dice',kind:'choose',style:'dice',prop:'Two dice',instr:'Roll two dice and add them up: that number is your first name. Roll again for your last. Tap your numbers.'},
   cardRace:{label:'Four-of-a-kind card race',icon:'cards',kind:'choose',style:'cards',prop:'A deck of cards',instr:'Pull four of each rank from a deck, one rank per player (A, K, Q, J...). Deal everyone four cards. On your turn draw one, then secretly pass one face-down to your left. Always end with four. Go fast! First to four of a kind slams them down and taps their rank to claim that career.'},
-  adventMatch:{label:'Advent calendar match',icon:'gift',kind:'random',style:'advent',prop:null,instr:'Open two doors. Match the pictures to find your calling. Three tries, then the studio picks for you.'},
+  adventMatch:{label:'Advent calendar match',icon:'gift',kind:'random',style:'advent',prop:null,instr:'Open two doors and match the pictures. Make a match and the studio draws your calling at random. Three tries, then the studio picks for you anyway.'},
   digitalDeal:{label:'Deal a digital card',icon:'cards',kind:'random',style:'cards',prop:null,instr:'Tap to be dealt a card. Your rank is your calling.'},
   realVillage:{label:'Pick a real house',icon:'house',kind:'choose',style:'houses',prop:'A Christmas village or decorations',instr:"Label the houses in your Christmas village (or any decorations around the room) with these names or numbers. Walk up, choose the one that calls to your soul, then tap it. Will this be where you meet the man of your dreams?"},
   mysteryHouses:{label:'Mystery cottages on screen',icon:'house',kind:'choose',style:'houses',prop:null,instr:'Choose a cottage. Its secret is your reason for coming home.'},
@@ -1559,6 +1559,7 @@ function mountFlaps(){document.querySelectorAll('.flapcol:not(.done) .flap').for
 /* ---------- advent calendar match (digital career pick) ---------- */
 const JOB_ICONS={
  editor:'<rect x="11" y="7" width="22" height="30" rx="2"/><path d="M15 13h14M15 18h14M15 23h9"/><path d="M15 28h8v5h-8z"/><path d="M37 15l3 3-10 10-4 1 1-4z"/>',
+ candy:'<path d="M20 40V18a6 6 0 1 1 12 0"/><path d="M20 26l6-4M20 33l6-4M26 20l6-3"/>',
  doctor:'<path d="M14 8v10a8 8 0 0 0 16 0V8"/><path d="M12 8h4M28 8h4"/><path d="M22 26v5a7 7 0 0 0 14 0v-3"/><circle cx="36" cy="25" r="3.2"/>',
  dolphin:'<path d="M5 30c5-9 15-15 27-13 4 1 7 3 9 6l-5 .5c0 6-6 11-15 12l1.5 5-5.5-4.5c-4 0-7-1.5-9-4l-4.5 2 1.5-4z"/><path d="M20 16.5l5-7 2.5 7.5"/><circle cx="34" cy="21.5" r="1.3" fill="currentColor"/><path d="M6 42c4-2 8-2 12 0s8 2 12 0 8-2 12 0"/>',
  finance:'<path d="M6 40h36"/><path d="M9 34l9-9 7 6 13-15"/><path d="M31 16h7v7"/><path d="M14 10v12M17 12h-4.5a2 2 0 0 0 0 4h3a2 2 0 0 1 0 4H11"/>',
@@ -1579,13 +1580,14 @@ const JOB_ICONS={
 function jobIconKey(title,i){const t=String(title||'').toLowerCase();const rules=[[/editor|magazine|writer|journal/,'editor'],[/doctor|nurse|medic|surgeon/,'doctor'],[/dolphin|whale|ocean|fish/,'dolphin'],[/financ|bank|stock|money|wall street/,'finance'],[/puppet/,'puppet'],[/bod(y|ies)|skelet|exhibit|morgue/,'bones'],[/claus|santa|elf/,'mrsclaus'],[/snow ?plow|plow|shovel/,'plow']];
   for(const [re,k] of rules)if(re.test(t))return k;const pool=['star','bell','tree','ornament','gift','briefcase','mitten','snowman'];return pool[i%pool.length];}
 function jobIcon(k){return `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${JOB_ICONS[k]||''}</svg>`;}
-function newAdvent(pid,key){const tk=takenMap(key,pid);const avail=shuffle(itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i));const k=Math.min(6,avail.length);
-  const doors=[];avail.slice(0,k).forEach(i=>{doors.push({t:'job',i},{t:'job',i});});while(doors.length<12)doors.push({t:'coal'});
+const ADVENT_SYMBOLS=['star','bell','tree','ornament','gift','mitten','snowman','candy'];
+function newAdvent(pid,key){const tk=takenMap(key,pid);const avail=itemsFor(key).filter(it=>!tk[it.i]).length;const k=Math.min(6,Math.max(1,avail));
+  const syms=shuffle(ADVENT_SYMBOLS).slice(0,k);const doors=[];syms.forEach(sym=>{doors.push({t:'sym',sym},{t:'sym',sym});});while(doors.length<12)doors.push({t:'coal'});
   const nums=shuffle(Array.from({length:24},(_,i)=>i+1)).slice(0,12);
   return {doors:shuffle(doors),nums,open:Array(12).fill(0),matched:Array(12).fill(0),tries:3,first:null,busy:false,done:false,msg:'Open two doors. Find a match.'};}
 function adventFor(pid,key){S.ui.advent=S.ui.advent||{};return S.ui.advent[pid]||(S.ui.advent[pid]=newAdvent(pid,key));}
 function adventHTML(pid,key){const a=adventFor(pid,key);const c=C();
-  const door=(d,j)=>{const isOpen=a.open[j]||a.matched[j];const ik=d.t==='coal'?'coal':jobIconKey(c.careers[d.i],d.i);
+  const door=(d,j)=>{const isOpen=a.open[j]||a.matched[j];const ik=d.t==='coal'?'coal':d.sym;
     return `<button class="adoor ${isOpen?'open':''} ${a.matched[j]?'hit':''} ${d.t==='coal'?'coal':''} c${j%4}" data-act="openDoor" data-id="${pid}" data-key="${key}" data-d="${j}" ${a.done||a.busy?'disabled':''} aria-label="Door ${a.nums[j]}">
       <span class="ad-in">${jobIcon(ik)}</span><span class="ad-door"><span class="ad-num">${a.nums[j]}</span><span class="ad-knob"></span></span></button>`;};
   return `<div class="advent" data-id="${pid}"><div class="adv-head"><span class="adv-title">Your Calling</span><span class="adv-sub">Advent calendar · match two doors</span></div>
@@ -1598,9 +1600,9 @@ A.openDoor=async el=>{const pid=el.dataset.id,key=el.dataset.key,j=+el.dataset.d
   if(a.done||a.busy||a.open[j]||a.matched[j])return;a.open[j]=1;flapTick();
   if(a.first===null){a.first=j;a.msg='Now open another…';adventRefresh(pid,key);return;}
   const f=a.first;a.first=null;a.busy=true;const d1=a.doors[f],d2=a.doors[j];
-  const same=d1.t===d2.t&&(d1.t==='coal'||d1.i===d2.i);
-  if(same&&d1.t==='job'){a.matched[f]=a.matched[j]=1;a.done=true;a.msg="It's a match! Meet your calling…";adventRefresh(pid,key);chime();
-    await sleep(1400);if(S.ui.advent)delete S.ui.advent[pid];await commit(key,pid,d1.i);return;}
+  const same=d1.t===d2.t&&(d1.t==='coal'||d1.sym===d2.sym);
+  if(same&&d1.t==='sym'){a.matched[f]=a.matched[j]=1;a.done=true;a.msg="It's a match! The studio is drawing your calling…";adventRefresh(pid,key);chime();
+    await sleep(1400);const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];if(pool.length)await commit(key,pid,pool[Math.floor(Math.random()*pool.length)]);return;}
   a.tries--;a.msg=same?'Two lumps of coal. Ho ho no.':(a.tries?'No match. Close them up and try again.':'Out of tries!');adventRefresh(pid,key);
   await sleep(same?1500:1100);a.open[f]=a.open[j]=0;a.busy=false;
   if(a.tries<=0){a.done=true;a.msg='The studio assigned you a job…';adventRefresh(pid,key);await sleep(1300);
