@@ -578,10 +578,18 @@ blockquote.exec{margin:8px 0 6px;padding:2px 0 2px 14px;border-left:4px solid va
 figure.aud{margin:14px 0 0}
 figure.aud blockquote{margin:0;font-family:'Cortesia',cursive;font-size:24px;line-height:1.25}
 figure.aud figcaption{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* realistic clapper sticks/hinge on in-game slates */
+:root{--hinge:linear-gradient(135deg,#f2f3f5 0%,#a9adb3 35%,#e3e5e8 60%,#7d8188 100%);--gloss:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,.06) 45%,rgba(0,0,0,.05) 55%,rgba(0,0,0,.35))}
+.round-head,.winner,.tvgrid h1{background:linear-gradient(165deg,#f4f5f6,#dcdee1);border-color:#b9bcc0;box-shadow:0 16px 32px rgba(0,0,0,.4),inset 0 0 0 2px rgba(255,255,255,.8)}
+.round-head::before,.winner::before,.tvgrid h1::before{background:radial-gradient(circle at 21px 18px,#fff 0 1px,#b9bcc1 2.5px,#5d6167 5.5px,transparent 6.5px),var(--hinge) 0 0/44px 100% no-repeat,var(--gloss),var(--stripe);box-shadow:inset 0 0 0 5px #1f1f21,inset 0 1px 0 6px rgba(255,255,255,.08)}
+.round-head::after,.winner::after,.tvgrid h1::after{background:radial-gradient(circle at 21px 15px,#fff 0 1px,#b9bcc1 2.5px,#5d6167 5.5px,transparent 6.5px),var(--hinge) 0 0/44px 100% no-repeat,var(--gloss),var(--stripe);box-shadow:inset 0 0 0 5px #1f1f21}
+.paper::before,.timer::before{background:radial-gradient(circle at 18px 12px,#fff 0 1px,#b9bcc1 2px,#5d6167 4.5px,transparent 5.5px),var(--hinge) 0 0/38px 100% no-repeat,var(--gloss),var(--stripe);box-shadow:inset 0 0 0 4px #1f1f21}
+.round-head h2,.winner h2,.winner h1,.slrow i{filter:url(#hmarkerfx)}
 </style>
 </head>
 <body>
-<div id="snow"></div><div id="flakes" aria-hidden="true"></div>
+<div id="snow"></div><div id="flakes" aria-hidden="true"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="hmarkerfx"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/></filter></svg>
 <div id="app"></div>
 <div id="modal"><div class="sheet" id="sheet"></div></div>
 <div id="toast"></div>
@@ -813,23 +821,32 @@ function slrow(left,scene,take){if(S.game&&S.game.solo&&/^Director/.test(left))l
 function vHome(){
   const saved=ls('hmh_session');const kb=S.ui.kitBusy&&S.ui.kitFrom==='home';
   return `<div class="home"><h1 class="sr">Blank for Christmas: make your own holiday movie</h1>
-  <svg class="slate" viewBox="0 0 460 500" role="img" aria-label="Clapperboard: Marco's Funhouse presents Blank for Christmas, a made-for-TV movie made by you. Scene 1, take 1."><defs><pattern id="stp" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="32" height="64" fill="#d8392f"/><rect x="32" width="32" height="64" fill="#1f8a4c"/></pattern></defs>
+  <svg class="slate" viewBox="0 0 460 500" role="img" aria-label="Clapperboard: Marco's Funhouse presents Blank for Christmas, a made-for-TV movie made by you. Scene 1, take 1."><defs>
+ <pattern id="stp" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="32" height="64" fill="#c9302a"/><rect x="32" width="32" height="64" fill="#1c7a43"/></pattern>
+ <linearGradient id="hgloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".45" stop-color="#fff" stop-opacity=".06"/><stop offset=".55" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+ <linearGradient id="hbody" x1="0" y1="0" x2=".25" y2="1"><stop offset="0" stop-color="#f4f5f6"/><stop offset="1" stop-color="#dcdee1"/></linearGradient>
+ <linearGradient id="hmetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2f3f5"/><stop offset=".35" stop-color="#a9adb3"/><stop offset=".6" stop-color="#e3e5e8"/><stop offset="1" stop-color="#7d8188"/></linearGradient>
+ <radialGradient id="hscrew" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#b9bcc1"/><stop offset="1" stop-color="#5d6167"/></radialGradient>
+ <filter id="hgrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+ <filter id="hmarker"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+ <filter id="hsoft"><feGaussianBlur stdDeviation="6"/></filter>
+ <clipPath id="hclip"><rect x="22" y="182" width="420" height="300" rx="16"/></clipPath>
+</defs>
 <g transform="rotate(-3.5 230 300)">
- <g class="arm"><rect x="22" y="76" width="420" height="50" rx="4" fill="#2a2a2c"/><rect x="96" y="82" width="340" height="38" fill="url(#stp)"/></g>
- <rect class="clapbar" x="22" y="128" width="420" height="56" rx="4" fill="#2a2a2c"/><rect x="96" y="134" width="340" height="44" fill="url(#stp)"/>
- <circle cx="44" cy="102" r="7" fill="#9a9a9e"/><circle cx="44" cy="156" r="7" fill="#9a9a9e"/><circle cx="74" cy="156" r="7" fill="#9a9a9e"/>
- <rect x="22" y="182" width="420" height="300" rx="20" fill="#ebeced" stroke="#c9cbce" stroke-width="2"/>
- <image href="${MF_WORDMARK}" x="44" y="203" width="204" height="24" preserveAspectRatio="xMinYMid meet"/>
- <text class="g" x="262" y="224" font-size="18" letter-spacing="3">PRESENTS</text>
- <rect x="36" y="240" width="392" height="3" fill="#1d1d1f"/>
- <text class="c" id="blankWord" x="232" y="304" font-size="40" text-anchor="middle">Blank</text>
- <rect x="72" y="314" width="320" height="1.6" fill="#9b9da1"/>
- <text class="c" x="232" y="380" font-size="58" text-anchor="middle">For Christmas</text>
- <rect x="36" y="398" width="392" height="3" fill="#1d1d1f"/>
- <rect x="268" y="400" width="2.5" height="74" fill="#1d1d1f"/><rect x="355" y="400" width="2.5" height="74" fill="#1d1d1f"/>
- <text class="g" x="42" y="433" font-size="14.5">A MADE-FOR-TV-MOVIE-</text><text class="g" x="42" y="461" font-size="21" font-weight="600" letter-spacing=".5">MADE-BY-YOU</text>
- <text class="g" x="312" y="424" font-size="16" text-anchor="middle">SCENE</text><text class="c" x="312" y="468" font-size="40" text-anchor="middle">1</text>
- <text class="g" x="398" y="424" font-size="16" text-anchor="middle">TAKE</text><text class="c" x="398" y="468" font-size="40" text-anchor="middle">1</text>
+ <g class="arm"><rect x="22" y="78" width="420" height="48" rx="5" fill="#1f1f21"/><rect x="98" y="83" width="340" height="38" fill="url(#stp)"/><rect x="22" y="78" width="420" height="48" rx="5" fill="url(#hgloss)"/><rect x="22.5" y="78.5" width="419" height="47" rx="5" fill="none" stroke="#000" stroke-opacity=".5"/><line x1="27" y1="80" x2="438" y2="80" stroke="#fff" stroke-opacity=".35"/></g>
+ <rect class="clapbar" x="22" y="128" width="420" height="56" rx="5" fill="#1f1f21"/><rect x="98" y="134" width="340" height="44" fill="url(#stp)"/><rect x="22" y="128" width="420" height="56" rx="5" fill="url(#hgloss)"/><rect x="22.5" y="128.5" width="419" height="55" rx="5" fill="none" stroke="#000" stroke-opacity=".5"/><line x1="27" y1="130" x2="438" y2="130" stroke="#fff" stroke-opacity=".35"/>
+ <path d="M26 92 L84 78 L90 176 L26 178 Z" fill="url(#hmetal)" stroke="#4d5056"/><rect x="30" y="124" width="56" height="8" rx="4" fill="#5d6167"/><rect x="30" y="125" width="56" height="3" rx="1.5" fill="#d9dbde"/><g transform="translate(44 104)"><circle r="6" fill="url(#hscrew)" stroke="#44474c" stroke-width=".8"/><line x1="-3.6" y1="-1.6" x2="3.6" y2="1.6" stroke="#3a3d42" stroke-width="1.6" stroke-linecap="round"/></g><g transform="translate(70 98)"><circle r="6" fill="url(#hscrew)" stroke="#44474c" stroke-width=".8"/><line x1="-3.6" y1="-1.6" x2="3.6" y2="1.6" stroke="#3a3d42" stroke-width="1.6" stroke-linecap="round"/></g><g transform="translate(44 158)"><circle r="6" fill="url(#hscrew)" stroke="#44474c" stroke-width=".8"/><line x1="-3.6" y1="-1.6" x2="3.6" y2="1.6" stroke="#3a3d42" stroke-width="1.6" stroke-linecap="round"/></g><g transform="translate(72 158)"><circle r="6" fill="url(#hscrew)" stroke="#44474c" stroke-width=".8"/><line x1="-3.6" y1="-1.6" x2="3.6" y2="1.6" stroke="#3a3d42" stroke-width="1.6" stroke-linecap="round"/></g>
+ <rect x="22" y="182" width="420" height="300" rx="16" fill="url(#hbody)"/>
+ <g clip-path="url(#hclip)"><rect x="22" y="182" width="420" height="300" fill="#fff" filter="url(#hgrain)"/><ellipse cx="320" cy="300" rx="70" ry="16" fill="#fff" opacity=".35" filter="url(#hsoft)"/><ellipse cx="120" cy="440" rx="70" ry="14" fill="#c8cacd" opacity=".3" filter="url(#hsoft)"/><path d="M22 182 L200 182 L90 482 L22 482 Z" fill="#fff" opacity=".18"/></g>
+ <rect x="22.75" y="182.75" width="418.5" height="298.5" rx="15.5" fill="none" stroke="#b9bcc0" stroke-width="1.5"/><rect x="25" y="185" width="414" height="294" rx="13.5" fill="none" stroke="#fff" stroke-opacity=".8"/>
+ <image href="${MF_WORDMARK}" x="44" y="203" width="204" height="24" preserveAspectRatio="xMinYMid meet" opacity=".92"/>
+ <text class="g" x="262" y="224" font-size="18" letter-spacing="3" opacity=".9">PRESENTS</text>
+ <rect x="36" y="240" width="392" height="3" fill="#232325" opacity=".9"/>
+ <g filter="url(#hmarker)"><text class="c" id="blankWord" x="232" y="304" font-size="40" text-anchor="middle" opacity=".93">Blank</text><text class="c" x="232" y="380" font-size="58" text-anchor="middle" opacity=".95">For Christmas</text><text class="c" x="312" y="468" font-size="40" text-anchor="middle" opacity=".93">1</text><text class="c" x="398" y="468" font-size="40" text-anchor="middle" opacity=".93">1</text></g>
+ <rect x="72" y="314" width="320" height="1.6" fill="#a6a9ad"/>
+ <rect x="36" y="398" width="392" height="3" fill="#232325" opacity=".9"/>
+ <rect x="268" y="400" width="2.5" height="74" fill="#232325" opacity=".9"/><rect x="355" y="400" width="2.5" height="74" fill="#232325" opacity=".9"/>
+ <g opacity=".9"><text class="g" x="42" y="433" font-size="14.5">A MADE-FOR-TV-MOVIE-</text><text class="g" x="42" y="461" font-size="21" font-weight="600" letter-spacing=".5">MADE-BY-YOU</text><text class="g" x="312" y="424" font-size="16" text-anchor="middle">SCENE</text><text class="g" x="398" y="424" font-size="16" text-anchor="middle">TAKE</text></g>
 </g></svg>
   <p class="hsum">The made-for-TV holiday movie is in a league of its own. Now it's your turn to produce the next big hit. Grab a few friends, let fate hand you a name, a job, a crisis and a hunk, then pitch your masterpiece. The best pitch gets red-and-green-lit!</p>
   <div class="hbtns">
