@@ -550,6 +550,12 @@ body,.btn,h1,h2,h3,h4{font-variant-ligatures:no-common-ligatures no-discretionar
 .recap-row{display:flex;gap:8px;max-width:420px;margin:12px auto 0}
 .recap-row input{flex:1;min-width:0}
 .recap-row .btn{flex:none}
+.qm-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.choice.qm{display:block;text-align:left;width:100%;padding:12px 14px}
+.choice.qm b{display:block;font-size:24px;margin:2px 0 3px}
+.choice.qm .small{display:block;color:#55585d;line-height:1.4}
+.qm-tag{display:inline-block;font:500 10.5px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#2b6f9e;background:#dcebf8;border-radius:5px;padding:2px 7px}
+.choice.qm[disabled]{opacity:.55;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -780,7 +786,7 @@ const MF={insta:'https://www.instagram.com/marcosfunhouse/',tiktok:'https://www.
 function mfLinks(noGoose){return `<div class="mf-social"><a href="${MF.insta}" target="_blank" rel="noopener">${ic('insta')}Instagram</a><a href="${MF.tiktok}" target="_blank" rel="noopener">${ic('tiktok')}TikTok</a><a href="${MF.youtube}" target="_blank" rel="noopener">${ic('youtube')}YouTube</a><a href="${MF.facebook}" target="_blank" rel="noopener">${ic('facebook')}Facebook</a>${noGoose?'':`<a href="${MF.goose}" target="_blank" rel="noopener">${ic('mail')}The Gooseletter</a>`}</div>`;}
 function mfSupport(){return `<div class="mf-support">Support? Email <a href="mailto:${MF.email}">${MF.email}</a></div>`;}
 function endCard(){return `<div class="paper endcard"><div class="eyebrow">Roll credits</div><h3>Made by Marco's Funhouse</h3><p>Had fun? Marco makes more ridiculous stuff every week. Get it in the Gooseletter.</p><a class="btn primary" href="${MF.goose}" target="_blank" rel="noopener">Join the Gooseletter</a>${mfLinks(1)}${mfSupport()}</div>`;}
-function slrow(left,scene,take){return `<div class="slrow"><div>${left}</div><div>Scene<i>${scene}</i></div><div>Take<i>${take||1}</i></div></div>`;}
+function slrow(left,scene,take){if(S.game&&S.game.solo&&/^Director/.test(left))left='Director: you';return `<div class="slrow"><div>${left}</div><div>Scene<i>${scene}</i></div><div>Take<i>${take||1}</i></div></div>`;}
 function vHome(){
   const saved=ls('hmh_session');const kb=S.ui.kitBusy&&S.ui.kitFrom==='home';
   return `<div class="home"><h1 class="sr">Blank for Christmas: make your own holiday movie</h1>
@@ -805,11 +811,11 @@ function vHome(){
   <p class="hsum">The made-for-TV holiday movie is in a league of its own. Now it's your turn to produce the next big hit. Grab a few friends, let fate hand you a name, a job, a crisis and a hunk, then pitch your masterpiece. The best pitch gets red-and-green-lit!</p>
   <div class="hbtns">
     <button class="hbtn hb-pink" data-act="howto"><b>How to play</b></button>
-    <button class="hbtn hb-green" data-act="quickPlay"><b>Quick play</b><span>Play and pass on one device</span></button>
-    <button class="hbtn hb-yellow" data-act="printPlay" ${kb?'disabled':''}><b>Print &amp; Play</b><span>${kb?'Printing your kit…':'Download Marco\'s Version'}</span></button>
+    <button class="hbtn hb-green" data-act="quickMenu"><b>Quick play</b><span>Start Marco's version in seconds</span></button>
+    <button class="hbtn hb-yellow" data-act="go" data-to="join"><b>Join a game</b><span>Got a code? Hop in on your phone</span></button>
     <button class="hbtn hb-blue" data-act="goSetup"><b>Make it your own!</b><span>You're the producer</span></button>
   </div>
-  ${(S.caps.db||saved)?`<div class="hlinks">${S.caps.db?`<button data-act="go" data-to="join">Join a game on my phone</button>`:''}${saved?`<button data-act="resume">Resume the game in progress</button>`:''}</div>`:''}
+  ${saved?`<div class="hlinks"><button data-act="resume">Resume the game in progress</button></div>`:''}
   <footer class="hcredit"><div>An original game from the mind of</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290">${mfLinks()}${mfSupport()}</footer>
   </div>`;
 }
@@ -952,11 +958,11 @@ function vGame(){
 }
 function hostBar(){
   const g=S.game;if(!isHost())return '';
-  const nxt={lobby:['Roll the opening credits','intro'],intro:['Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:['Start the pitches','pitch'],pitch:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
+  const nxt={lobby:['Roll the opening credits','intro'],intro:['Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:['Start the pitches','pitch'],pitch:g.solo?['Send it to the studio','results']:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
   if(!nxt)return '';
   let status='';const ps=plist();
   if(ROUND_KEYS.includes(g.phase)){const n=ps.filter(p=>isDone(p,g.phase)).length;status=`${n}/${ps.length} done`;}
-  if(g.phase==='twist'){status=twistMode()==='paperHat'?`Paper slips · ${ps.filter(p=>p.drawnSlip).length}/${ps.length} typed in`:g.twists?'Twists drawn':`${Object.keys(S.slips).filter(id=>S.players[id]).length}/${ps.length} slips in`;}
+  if(g.phase==='twist'&&g.solo){status=g.twists?'Twist drawn':'';}else if(g.phase==='twist'){status=twistMode()==='paperHat'?`Paper slips · ${ps.filter(p=>p.drawnSlip).length}/${ps.length} typed in`:g.twists?'Twists drawn':`${Object.keys(S.slips).filter(id=>S.players[id]).length}/${ps.length} slips in`;}
   if(g.phase==='vote'){status=`${Object.keys(S.votes).filter(id=>S.players[id]).length}/${ps.length} voted`;}
   if(g.phase==='lobby')status=`${ps.length} in the cast`;
   const dis=(g.phase==='lobby'&&ps.length<1)||(g.phase==='twist'&&!g.twists&&twistMode()!=='paperHat')?'disabled':'';
@@ -1070,6 +1076,8 @@ function vTwistPaper(){
   return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>${esc(ROUNDS.twist.blurb)}</p>${slrow('Director: you &amp; your friends',5,1)}</div>${g.cues&&g.cues.twist?`<div class="cue"><span class="cue-l">Host cue</span>${esc(g.cues.twist)}</div>`:''}${top}${qs}${list}`;
 }
 function vTwist(){
+  if(S.game.solo&&!S.game.twists)return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>Every holiday movie needs drama before the happy ending. Tonight the studio's writers' room is filling the hat for you.</p>${slrow('Director: you &amp; your friends',5,1)}</div>
+   <div class="paper center"><h3>The studio wrote you a twist</h3><p class="small muted">No friends to fill the hat tonight, so the writers' room did it for you. Whatever's on the slip goes in your movie.</p><button class="btn gold" data-act="soloTwist">Draw my twist</button></div>`;
   if(twistMode()==='paperHat')return vTwistPaper();
   const g=S.game,ps=plist(),c=C();
   const drawn=!!g.twists;
@@ -1128,11 +1136,12 @@ function vVote(){
 function tally(){const t={};Object.entries(S.votes).forEach(([vid,v])=>{if(S.players[vid]&&v&&S.players[v.target])t[v.target]=(t[v.target]||0)+1;});return t;}
 function vResults(){
   const ps=plist();const t=tally();const max=Math.max(0,...Object.values(t));
-  const winners=ps.filter(p=>max>0&&t[p.id]===max);
+  const solo=!!S.game.solo;
+  const winners=solo?ps:ps.filter(p=>max>0&&t[p.id]===max);
   const sorted=ps.slice().sort((a,b)=>(t[b.id]||0)-(t[a.id]||0));
   return `<div class="winner" style="padding:16px 0"><div class="crown">${homeBowSVG(0)}</div><div class="eyebrow" style="color:var(--gold2)">${winners.length>1?'It\'s a tie! Greenlit':'Greenlit for Christmas'}</div>
    <h2>${winners.length?winners.map(w=>esc((w.pitch&&w.pitch.title)||fullName(w)||w.name)).join(' & '):'No votes cast'}</h2>${winners.length===1&&winners[0].pitch&&winners[0].pitch.tagline?`<p style="font-style:italic;margin:4px 0">${esc(winners[0].pitch.tagline)}</p>`:''}${winners.length?`<p style="color:#e3dacb">starring ${winners.map(w=>esc(fullName(w)||'?')).join(' & ')} · pitched by ${winners.map(w=>esc(w.name)).join(' & ')}</p>`:''}${slrow('That\'s a wrap',9,1)}</div>
-  <div class="paper"><h3>The votes</h3>${sorted.map(p=>`<div class="tally"><span class="dot" style="background:${p.color}"></span><span style="width:120px" class="pname">${esc(p.name)}</span><div class="bar" style="width:${max?((t[p.id]||0)/max*60):0}%"></div><b>${t[p.id]||0}</b></div>`).join('')}</div>
+  ${solo?`<div class="paper center"><div class="eyebrow">Studio note</div><p style="font-size:17px;margin:4px 0 0">${esc(soloNote())}</p></div>`:`<div class="paper"><h3>The votes</h3>${sorted.map(p=>`<div class="tally"><span class="dot" style="background:${p.color}"></span><span style="width:120px" class="pname">${esc(p.name)}</span><div class="bar" style="width:${max?((t[p.id]||0)/max*60):0}%"></div><b>${t[p.id]||0}</b></div>`).join('')}</div>`}
   ${recapCard()}
   ${endCard()}
   <div class="mcards">${sorted.map(p=>movieCard(p,true)).join('')}</div>
@@ -1140,18 +1149,19 @@ function vResults(){
 }
 function recapText(){
   const c=C(),ps=plist(),t=tally();const max=Math.max(0,...Object.values(t));
-  const winners=ps.filter(p=>max>0&&t[p.id]===max);
+  const winners=S.game.solo?ps:ps.filter(p=>max>0&&t[p.id]===max);
   const ttl=p=>(p.pitch&&p.pitch.title)||fullName(p)||p.name;
   const L=[];
-  L.push((c.title||'Blank for Christmas')+': the movies we made');
+  L.push((c.title||'Blank for Christmas')+(S.game.solo?': my movie':': the movies we made'));
   L.push('');
+  if(S.game.solo)L.push('Studio note: '+soloNote());
   if(winners.length)L.push((winners.length>1?'GREENLIT (tie): ':'GREENLIT: ')+winners.map(w=>ttl(w)+' (pitched by '+w.name+')').join(' & '));
   ps.slice().sort((a,b)=>(t[b.id]||0)-(t[a.id]||0)).forEach(p=>{
     const m=c.motives[p.motive],h=c.hunks[p.hunk],sl=slipOf(p),pp=p.pitch||{};
     L.push('');L.push('------------------------------');
     L.push(ttl(p).toUpperCase());
     if(pp.tagline)L.push('"'+pp.tagline+'"');
-    L.push('Pitched by '+p.name+' · '+(t[p.id]||0)+' vote'+((t[p.id]||0)===1?'':'s'));
+    L.push('Pitched by '+p.name+(S.game.solo?'':' · '+(t[p.id]||0)+' vote'+((t[p.id]||0)===1?'':'s')));
     if(fullName(p))L.push('Starring: '+fullName(p));
     if(p.career!=null)L.push('Holiday calling: '+c.careers[p.career]);
     if(m)L.push('Reason for coming home: '+m.title);
@@ -1164,7 +1174,7 @@ function recapText(){
   L.push('More ridiculous stuff in the Gooseletter: '+MF.goose);
   return L.join('\n');
 }
-function recapCard(){const sh=!!navigator.share;return `<div class="paper recap"><div class="eyebrow">Take the movies home</div><h3>Email yourself the recap</h3><p class="small muted">Every movie from tonight: titles, taglines, plots, twists and the votes.</p>
+function recapCard(){const sh=!!navigator.share;return `<div class="paper recap"><div class="eyebrow">${S.game.solo?'Take your movie home':'Take the movies home'}</div><h3>Email yourself the recap</h3><p class="small muted">${S.game.solo?'Your movie: title, tagline, plot, twist and the studio note.':'Every movie from tonight: titles, taglines, plots, twists and the votes.'}</p>
   <div class="recap-row"><input class="t" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" data-k="recapEmail" id="recapEmail" aria-label="Your email"><button class="btn primary" data-act="emailRecap">Email it</button></div>
   <div class="row" style="justify-content:center;margin-top:10px">${sh?`<button class="btn small" data-act="shareRecap">Share</button>`:''}<button class="btn small" data-act="copyRecap">Copy recap</button></div>
   <p class="small muted" style="margin-top:10px">Opens your email app with everything filled in. Nothing is sent or saved by us.</p></div>`;}
@@ -1227,7 +1237,34 @@ A.home=()=>{S.view='home';render();};
 A.go=el=>{S.view=el.dataset.to;S.ui.aiErr=null;render();window.scrollTo(0,0);};
 A.closeModal=closeModal;
 function newDraft(version){return {version,content:clone(MARCO),mechanics:{...PROPS_MECH},custom:{},cues:{},settings:{prepMin:5,pitchMin:2,kitPlayers:8},playMode:'host',prompts:{name:'marco',career:'marco',motive:'marco',hunk:'marco',twist:'marco'}};}
-A.quickPlay=()=>{if(S.busy)return;S.draft=newDraft('marco');S.draft.quick=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';A.createGame();};
+A.quickPlay=()=>{if(S.busy)return;closeModal();S.draft=newDraft('marco');S.draft.quick=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';A.createGame();};
+function quickMenuHTML(){const online=!!S.caps.db;const kb=S.ui.kitBusy;
+  if(S.ui.qmSolo)return `<div class="eyebrow">Solo mode</div><h2>Who's the star?</h2><p class="small muted">Your name goes on the slate. Your heroine gets a name of her own in Round 1.</p>
+    <input class="t" id="soloName" data-k="soloName" placeholder="Your name" maxlength="30" autocomplete="given-name" style="margin-top:6px">
+    <div class="row" style="margin-top:14px"><button class="link" data-act="qmBack">Back</button><span class="spacer"></span><button class="btn primary" data-act="startSolo">Action!</button></div>`;
+  const opt=(act,tag,title,sub,dis)=>`<button class="choice qm" data-act="${act}" ${dis?'disabled':''}><span class="qm-tag">${tag}</span><b>${title}</b><span class="small">${sub}</span></button>`;
+  return `<div class="eyebrow">Quick play</div><h2>How are you playing?</h2><p class="small muted">Every option uses Marco's version, ready to go.</p>
+  <div class="qm-list">
+   ${opt('quickPlay','Multiplayer','Play and pass on one device','One phone or laptop gets passed around the room. No accounts, no downloads. Best for 3 to 8 people on one couch.')}
+   ${opt('quickOnline','Multiplayer','Everyone on their own phone',online?'Host on a laptop or TV; friends join with a 4-letter code on their phones. Secret twists stay secret.':'Not available in this view.',!online)}
+   ${opt('qmPrint','Multiplayer',kb?'Printing your kit…':"Print Marco's version",'Downloads a printable PDF host kit: the host script, name tags, secret slips and ballots. Play with real dice and props, no screens needed.',kb)}
+   ${opt('qmSolo','Solo','Solo mode','Just you. Roll your own heroine, draw a twist the studio wrote for you, then pitch your movie. Great for a test run or a cocoa-for-one night.')}
+  </div>`;}
+A.quickMenu=()=>{S.ui.qmSolo=false;modal(quickMenuHTML());};
+A.qmBack=()=>{S.ui.qmSolo=false;$('#sheet').innerHTML=quickMenuHTML();};
+A.qmSolo=()=>{S.ui.qmSolo=true;$('#sheet').innerHTML=quickMenuHTML();setTimeout(()=>{const i=$('#soloName');if(i)i.focus();},50);};
+A.qmPrint=async()=>{closeModal();await A.printPlay();};
+A.quickOnline=()=>{if(S.busy)return;if(!S.caps.db){toast('Online games need this page opened from the website or Claude.');return;}closeModal();S.draft=newDraft('marco');S.draft.quick=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='online';A.createGame();};
+A.startSolo=async()=>{if(S.busy)return;const name=(($('#soloName')||{}).value||'').trim()||'You';closeModal();S.ui.qmSolo=false;
+  S.draft=newDraft('marco');S.draft.quick=true;S.draft.solo=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';
+  await A.createGame();if(!S.store||!S.game)return;
+  await S.store.setPlayer('p'+rid(8),{name,controller:S.myUid,joinedAt:Date.now(),color:COLORS[0]});
+  await S.store.updateGame({phase:'intro'});window.scrollTo(0,0);};
+const STUDIO_NOTES=["The network ordered three sequels and a holiday-themed cooking spin-off.","Test audiences cried twice. Once on purpose.","Premieres Saturday at 8/7c, right after a mattress commercial.","The studio loved it but wants the hunk to own a bakery. Non-negotiable.","Already nominated for Best Use of a Gazebo.","Streaming next December. And the December after that. Forever.","Critics are calling it 'technically a movie.'","The snow budget alone was $4 million."];
+function soloNote(){const g=S.game;let h=0;for(const ch of String(g.code||'x'))h=(h*31+ch.charCodeAt(0))>>>0;return STUDIO_NOTES[h%STUDIO_NOTES.length];}
+A.soloTwist=async()=>{const g=S.game,c=C(),p=plist()[0];if(!p)return;
+  const answers=c.twistQuestions.map((q,i)=>pickFrom(BANK['twist'+i]||BANK.generic,[]));
+  await S.store.setSlip('studio',{answers,by:'studio'});await S.store.updateGame({twists:{[p.id]:'studio'}});};
 A.pickVersion=el=>{const v=el.dataset.v;
   if(v==='marco'){S.draft=newDraft('marco');S.view='rounds';}
   else if(v==='custom'){S.draft=newDraft('custom');S.view='editor';}
@@ -1306,7 +1343,7 @@ A.createGame=async()=>{
   if(d.version!=='marco')saveSetup(d);
   const online=d.playMode==='online'&&S.caps.db;if(d.playMode==='host')d.settings.kitPlayers=d.settings.kitPlayers||8;
   const g={code:code4(),version:d.version,content:c,mechanics:d.mechanics,custom:d.custom,cues:d.cues,settings:d.settings,phase:'lobby',hostId:null,createdAt:Date.now(),
-    prep:{endsAt:null,left:d.settings.prepMin*60000},pitch:{endsAt:null,left:d.settings.pitchMin*60000},twists:null,pitchOrder:[],pitchIdx:0};
+    prep:{endsAt:null,left:d.settings.prepMin*60000},pitch:{endsAt:null,left:d.settings.pitchMin*60000},twists:null,pitchOrder:[],pitchIdx:0,solo:!!d.solo};
   S.busy=true;render();
   try{
     if(online){S.myUid=await myUid();g.hostId=S.myUid;openStore(new DbStore(S.caps.db,g.code));await S.store.createGame(g);ls('hmh_session',{mode:'online',code:g.code});}
@@ -1443,7 +1480,7 @@ A.jump=async el=>{closeModal();const to=el.dataset.to;const patch={phase:to};con
   if(to==='pitch'){patch.pitchOrder=shuffle(plist().map(p=>p.id));patch.pitchIdx=0;patch.pitch={endsAt:null,left:g.settings.pitchMin*60000};}
   await S.store.updateGame(patch);};
 A.emailRecap=()=>{const to=(($('#recapEmail')||{}).value||'').trim();const c=C();
-  const subj=(c.title||'Blank for Christmas')+': our movies';let body=recapText();
+  const subj=(c.title||'Blank for Christmas')+(S.game.solo?': my movie':': our movies');let body=recapText();
   if(body.length>6000)body=body.slice(0,5900)+'\n\n(Recap trimmed to fit. Tap "Copy recap" in the game for the full version.)';
   const url='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
   const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();};
