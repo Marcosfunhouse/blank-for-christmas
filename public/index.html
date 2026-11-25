@@ -1246,7 +1246,7 @@ function quickMenuHTML(){const online=!!S.caps.db;const kb=S.ui.kitBusy;
   return `<div class="eyebrow">Quick play</div><h2>How are you playing?</h2><p class="small muted">Every option uses Marco's version, ready to go.</p>
   <div class="qm-list">
    ${opt('quickPlay','Multiplayer','Play and pass on one device','One phone or laptop gets passed around the room. No accounts, no downloads. Best for 3 to 8 people on one couch.')}
-   ${opt('quickOnline','Multiplayer','Everyone on their own phone',online?'Host on a laptop or TV; friends join with a 4-letter code on their phones. Secret twists stay secret.':'Not available in this view.',!online)}
+   ${opt('quickOnline','Multiplayer','Everyone on their own phone',online?'Start it on your phone and friends join with a 4-letter code on theirs. Secret twists stay secret. Got a TV or laptop? Put it on the big screen too.':'Not available in this view.',!online)}
    ${opt('qmPrint','Multiplayer',kb?'Printing your kit…':"Print Marco's version",'Downloads a printable PDF host kit: the host script, name tags, secret slips and ballots. Play with real dice and props, no screens needed.',kb)}
    ${opt('qmSolo','Solo','Solo mode','Just you. Roll your own heroine, draw a twist the studio wrote for you, then pitch your movie. Great for a test run or a cocoa-for-one night.')}
   </div>`;}
