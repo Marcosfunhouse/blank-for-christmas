@@ -603,6 +603,18 @@ figure.aud figcaption{font-size:13px;color:var(--muted);margin-top:2px}
 .sc-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:13.5px;font-weight:600;color:#3a3b3e}
 .sc-foot .link{white-space:nowrap;font-size:13.5px}
 @media (min-width:700px){.sc-grid{gap:12px}}
+.ingredients{background:#fdf5db;border:2px solid #e2b93a;border-radius:12px;padding:12px 14px;margin:10px 0 6px}
+.ingredients .eyebrow{border-bottom:2px solid #3a3b3e;padding-bottom:6px;margin-bottom:8px}
+.ingredients dl{margin:0;display:grid;gap:5px}
+.ing-row{display:grid;grid-template-columns:128px 1fr;gap:8px;font-size:14.5px;line-height:1.35}
+.ing-row dt{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#7a6418;padding-top:2px}
+.ing-row dd{margin:0;font-weight:600}
+.ing-flag{font-weight:400;color:#55585d}
+.ing-tw{margin-top:10px;padding-top:8px;border-top:1px dashed #d9c27a}
+.ing-h{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#c9302a;margin-bottom:4px}
+.ing-tw ul{margin:0;padding-left:18px;display:grid;gap:5px;font-size:14.5px;line-height:1.35}
+.ing-q{color:#55585d}
+@media (max-width:420px){.ing-row{grid-template-columns:1fr;gap:0}}
 </style>
 </head>
 <body>
@@ -1912,10 +1924,17 @@ function pitchPlotStarter(p){const b=pitchBits(p);const c=C();
   if(b.slip){const a=b.slip.answers;t+=` But just as the snow starts falling, everything goes wrong: ${sent(a[0])||'[something unforgivable happens].'} Then on the big morning, ${sent(a[1])||'[disaster strikes].'} And under the tree: ${sent(a[2])||'[the worst gift imaginable].'}`;}
   t+=`\n\nCan ${b.first} [pull off a big romantic gesture] before [the dramatic deadline], or will [the villain] ruin Christmas for good?`;return t;}
 function pitchDraft(pid){const d=S.ui.pitchDraft||(S.ui.pitchDraft={});if(!d[pid]){const p=S.players[pid]||{};const pp=p.pitch||{};d[pid]={title:pp.title||'',tagline:pp.tagline||'',plot:pp.plot||''};}return d[pid];}
+function pitchIngredients(p,b){const c=C(),sl=slipOf(p);
+  const row=(k,v)=>v?`<div class="ing-row"><dt>${k}</dt><dd>${v}</dd></div>`:'';
+  const tw=sl&&sl.answers?c.twistQuestions.map((q,i)=>sl.answers[i]?`<li><span class="ing-q">${esc(q)}</span> ${esc(sl.answers[i])}</li>`:'').join(''):'';
+  return `<div class="ingredients"><div class="eyebrow">Your movie so far</div><dl>
+   ${row('Starring',esc(b.full))}${row('Holiday calling',esc(b.career||''))}${row('Coming home because',b.m?esc(b.m.title):'')}${row('Falling for',b.h?esc(b.h.title)+(b.h.redflag?` <span class="ing-flag">(red flag: ${esc(b.h.redflag)})</span>`:''):'')}</dl>
+   <div class="ing-tw"><div class="ing-h">Your twist</div>${tw?`<ul>${tw}</ul>`:`<p class="small muted" style="margin:2px 0 0">${twistMode()==='paperHat'?'Check the paper slip you drew from the hat.':'Your twist shows up here once it’s drawn.'}</p>`}</div>
+   <p class="small muted" style="margin:8px 0 0">Work in as many of these as you can. The twist is where the fun is.</p></div>`;}
 function pitchForm(p){
   const d=pitchDraft(p.id);const b=pitchBits(p);
   return `<div class="paper pitchsheet"><div class="row" style="flex-wrap:nowrap"><span class="dot" style="background:${p.color}"></span><h3 style="margin:0">${esc(p.name)}'s pitch sheet</h3><span class="spacer"></span><button class="link small" data-act="closePitch">Close</button></div>
-  <p class="small muted" style="margin:6px 0 0">Starring <b>${esc(b.full)}</b>, a ${esc(b.careerL)}${b.m?`, home for "${esc(b.m.title)}"`:''}${b.h?`, falling for ${esc(b.h.title.replace(/^The /,'the '))}`:''}. Use every detail from your twist slip!</p>
+  ${pitchIngredients(p,b)}
   <label class="f">Movie title ${sugBtn(`data-kind="pitchTitle" data-pid="${p.id}"`)}</label>
   <input class="t ptitle-in" data-k="pt_${p.id}" data-pitch="${p.id}" data-f="title" maxlength="80" placeholder="e.g. ${esc(b.career)} for Christmas" value="${esc(d.title)}">
   <label class="f">Tagline ${sugBtn(`data-kind="pitchTagline" data-pid="${p.id}"`)}</label>
