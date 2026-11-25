@@ -1,0 +1,33 @@
+# Blank for Christmas — Cloudflare Worker config.
+# Cloudflare reads this file when you import the GitHub repository. You shouldn't need to edit it.
+name = "blank-for-christmas"
+main = "src/worker.js"
+compatibility_date = "2026-11-20"
+
+# The game itself (index.html and friends). /api/* goes to the Worker first.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# One live "room" per game code (multiplayer), plus small counters for AI limits.
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[observability]
+enabled = true
+
+# ---- Settings you can change in the Cloudflare dashboard (Settings > Variables) ----
+[vars]
+AI_ENABLED = "true"            # "false" turns every AI button off; the game still works
+MODEL_QUICK = "claude-haiku-5-5"   # one-line suggestions
+MODEL_DEFAULT = "claude-haiku-5-5" # whole-game writing and posters
+AI_ROOM_LIMIT = "60"           # AI calls allowed per game room
+AI_IP_DAILY_LIMIT = "120"      # AI calls allowed per internet connection per day
+ROOM_TTL_HOURS = "36"          # rooms delete themselves this long after the last move
+# The Claude API key is NOT here. Add it as a secret named ANTHROPIC_API_KEY (see README).
