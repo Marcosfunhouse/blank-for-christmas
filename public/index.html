@@ -1092,7 +1092,7 @@ function vGame(){
 }
 function hostBar(){
   const g=S.game;if(!isHost())return '';
-  const nxt={lobby:['Roll the opening credits','intro'],intro:['Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:['Start the pitches','pitch'],pitch:g.solo?['Send it to the studio','results']:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
+  const nxt={lobby:['Roll the opening credits','intro'],intro:['Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:g.solo?['Send it to the studio','results']:['Start the pitches','pitch'],pitch:g.solo?['Send it to the studio','results']:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
   if(!nxt)return '';
   let status='';const ps=plist();
   if(ROUND_KEYS.includes(g.phase)){const n=ps.filter(p=>isDone(p,g.phase)).length;status=`${n}/${ps.length} done`;}
@@ -1101,7 +1101,7 @@ function hostBar(){
   if(g.phase==='lobby')status=`${ps.length} in the cast`;
   const dis=(g.phase==='lobby'&&ps.length<1)||(g.phase==='twist'&&!g.twists&&twistMode()!=='paperHat')?'disabled':'';
   if(S.ui.judging)return `<div class="footer-bar"><div class="in"><span class="small">Take ${g.take||1}</span><span class="spacer"></span><button class="btn primary small" disabled><span class="spin-ld"></span>The studio is reading your pitch…</button></div></div>`;
-  if(g.solo&&g.phase==='pitch')status='Take '+(g.take||1);
+  if(g.solo&&(g.phase==='pitch'||g.phase==='prep'))status='Take '+(g.take||1);
   return `<div class="footer-bar"><div class="in"><span class="small">${status}</span><span class="spacer"></span><button class="btn primary small" data-act="advance" data-to="${nxt[1]}" ${dis}>${nxt[0]} →</button></div></div>`;
 }
 function vLobby(){
@@ -1490,7 +1490,9 @@ Reply with JSON only, no other text:
 }
 async function judgePitch(p){if(S.caps.sample){try{return await aiVerdict(p);}catch(e){console.warn('judge fallback',e);}}return heuristicVerdict(p);}
 async function soloSubmit(){
-  const g=S.game,p=plist()[0];if(!p||S.ui.judging)return;const pp=p.pitch||{};
+  const g=S.game;let p=plist()[0];if(!p||S.ui.judging)return;
+  try{await savePitchFields(p.id);}catch(e){}
+  p=plist()[0];const pp=p.pitch||{};
   if(!(pp.title||pp.tagline||pp.plot)){toast('Write your pitch sheet first. The studio needs something to read!');return;}
   S.ui.judging=true;render();
   let v;try{v=await judgePitch({id:p.id,...p});}catch(e){v=heuristicVerdict({id:p.id,...p});}
@@ -2312,7 +2314,7 @@ document.addEventListener('input',e=>{const el=e.target;
   else if(el.dataset.slip){const d=S.ui.slipDraft||(S.ui.slipDraft={});(d[el.dataset.slip]||(d[el.dataset.slip]=['','','']))[+el.dataset.i]=el.value;}
 });
 document.addEventListener('change',e=>{const el=e.target;
-  if(el.dataset&&el.dataset.pitch){savePitchFields(el.dataset.pitch,[el.dataset.f]).catch(()=>{});}
+  if(el.dataset&&el.dataset.pitch){const pid=el.dataset.pitch,f=el.dataset.f;setTimeout(()=>savePitchFields(pid,[f]).catch(()=>{}),350);}
   if(el.dataset.bindNum){setPath(S,el.dataset.bindNum,+el.value);}
   if(el.dataset.actChange==='setMech'){S.draft.mechanics[el.dataset.r]=el.value;render();}
   if(el.tagName==='SELECT'&&el.dataset.bind)setPath(S,el.dataset.bind,el.value);
