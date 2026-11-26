@@ -538,6 +538,19 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .steps i.on{background:#9fc79b}
 .steps i.now{background:#f6e7ad;box-shadow:0 0 8px rgba(246,231,173,.8)}
 .cue{background:#fdf5db;color:var(--ink);border:2px solid #e2b93a;font-style:normal;border-radius:12px}
+.chairback{position:relative;height:178px;margin:14px auto 6px;max-width:360px}
+.cb-post{position:absolute;top:0;bottom:0;width:22px;border-radius:11px 11px 4px 4px;background:linear-gradient(90deg,#6e4422 0%,#b98450 35%,#d9a873 50%,#a8733f 70%,#5e391b 100%);box-shadow:0 6px 10px rgba(0,0,0,.25)}
+.cb-post.l{left:4px}.cb-post.r{right:4px}
+.cb-post::after{content:"";position:absolute;left:0;right:0;height:6px;top:126px;background:rgba(0,0,0,.18);border-radius:3px}
+.cb-canvas{position:absolute;left:0;right:0;top:16px;height:92px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 34px;border-radius:6px;
+ background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px),linear-gradient(180deg,#2a2a2c,#18181a 60%,#222224);
+ box-shadow:inset 0 3px 0 rgba(255,255,255,.08),inset 0 -4px 8px rgba(0,0,0,.5),0 10px 18px rgba(0,0,0,.3)}
+.cb-canvas::before,.cb-canvas::after{content:"";position:absolute;top:-3px;bottom:-3px;width:30px;border-radius:14px;background:linear-gradient(90deg,#101011,#2c2c2e 50%,#101011);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.cb-canvas::before{left:-4px}.cb-canvas::after{right:-4px}
+.cb-name{font-family:'Redbell','Cortesia',cursive;font-weight:400;color:#f6f1e7;font-size:46px;line-height:1.05;white-space:nowrap;text-shadow:0 1px 0 rgba(0,0,0,.4);position:relative;z-index:1}
+.cb-star{color:#e9c46a;font-size:20px;position:relative;z-index:1;line-height:1}
+.cb-rail{position:absolute;left:18px;right:18px;top:134px;height:12px;border-radius:6px;background:linear-gradient(180deg,#d9a873,#a8733f 60%,#6e4422);box-shadow:0 4px 8px rgba(0,0,0,.25)}
+.cb-line{text-align:center;font-size:17px;margin:6px 0 0;color:#44474b}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -1506,13 +1519,19 @@ function closeModal(){$('#modal').classList.remove('show');$('#sheet').classList
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
 function revealHTML(key,p){
   const c=C();
-  if(key==='name')return `<div class="eyebrow">Introducing</div><div class="reveal-title">${esc(fullName(p)||'')}!</div><p class="muted">A star (of Bethlehem) is born!</p>`;
+  if(key==='name'){const nm=fullName(p)||'';return `<div class="eyebrow">Introducing</div>
+  <div class="chairback" role="img" aria-label="${esc(nm)}, printed on the back of a director's chair">
+   <span class="cb-post l"></span><span class="cb-post r"></span>
+   <div class="cb-canvas"><span class="cb-star" aria-hidden="true">&#9733;</span><span class="cb-name" id="cbName">${esc(nm)}</span></div>
+   <span class="cb-rail"></span></div>
+  <p class="cb-line">A star (of Bethlehem) is born!</p>`;}
   if(key==='career'){const i=p.career;return `<div class="eyebrow">${poss(p.name)} holiday calling</div><div class="row" style="margin:12px 0">${mechOf('career').style==='cards'?`<div class="pcard ${i%2===0?'red':''}" style="width:90px;cursor:default"><span class="rk">${RANKS[i]||i+1}${SUITS[i%4]}</span></div>`:`<div class="job-tile">${jobIcon(jobIconKey(c.careers[i],i))}</div>`}<div class="reveal-title" style="flex:1">${esc(c.careers[i])}</div></div><p class="muted">Is it your true calling, or the very career you left the big city to escape?</p>`;}
   if(key==='motive'){const m=c.motives[p.motive];return `<div class="eyebrow">${poss(p.name)} Christmas motive</div><div class="reveal-place">${esc(m.place)}</div><div class="reveal-title">${esc(m.title)}</div><p>${esc(m.text)}</p>`;}
   if(key==='hunk'){const h=c.hunks[p.hunk];return `<div class="eyebrow">${poss(p.name)} holiday hunk</div><img class="pix hunk-portrait" src="${hunkPix(p.hunk)}" alt="" width="120" height="120"><div class="reveal-title">${esc(h.title)}</div>${h.line?`<div class="quote">"${esc(h.line)}"</div>`:''}${h.backstory?`<div class="kv"><b>Backstory</b>${esc(h.backstory)}</div>`:''}${h.vibe?`<div class="kv"><b>Vibe</b>${esc(h.vibe)}</div>`:''}${h.redflag?`<div class="kv"><b>Red flag</b>${esc(h.redflag)}</div>`:''}${h.verdict?`<div class="kv"><b>The verdict</b>${esc(h.verdict)}</div>`:''}`;}
   return '';
 }
-function showReveal(key,p,celebrate){modal(revealHTML(key,p)+`<div class="row" style="margin-top:16px"><span class="spacer"></span><button class="btn primary" data-act="closeModal">${celebrate?'Love it':'Close'}</button></div>`);if(celebrate)confetti();}
+function fitChair(){const n=document.getElementById('cbName');if(!n)return;const box=n.parentElement;const st=box.querySelector('.cb-star');const room=box.clientWidth-68-(st?st.offsetWidth+10:0);let fs=46,k=0;n.style.fontSize=fs+'px';while(n.offsetWidth>room&&fs>18&&k<40){fs-=1;n.style.fontSize=fs+'px';k++;}}
+function showReveal(key,p,celebrate){modal(revealHTML(key,p)+`<div class="row" style="margin-top:16px"><span class="spacer"></span><button class="btn primary" data-act="closeModal">${celebrate?'Love it':'Close'}</button></div>`);fitChair();if(celebrate)confetti();}
 function posterHTML(p){
   const P=p.poster;if(!P)return '';
   return `<div class="poster" style="--pc:${p.color}"><svg class="vil" viewBox="0 0 300 120" preserveAspectRatio="none"><path d="M0 120 L0 80 L20 80 L20 60 L35 45 L50 60 L50 80 L70 80 L70 55 L90 35 L110 55 L110 85 L130 85 L130 70 L150 50 L170 70 L170 90 L190 90 L190 60 L210 40 L230 60 L230 82 L250 82 L250 66 L268 50 L286 66 L286 85 L300 85 L300 120Z" fill="#0b1a26"/><g fill="#ffd36b">${[[28,68],[84,62],[94,62],[144,76],[200,66],[220,70],[262,72]].map(([x,y])=>`<rect x="${x}" y="${y}" width="6" height="6"/>`).join('')}</g><path d="M0 120 Q150 95 300 120Z" fill="#fff" opacity=".9"/></svg>
