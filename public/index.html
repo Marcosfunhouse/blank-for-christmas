@@ -374,6 +374,50 @@ body[data-wrap="photo"] #flakes{display:block}
 .adm-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.adm-tab{margin:0;padding:10px;text-align:center}.adm-tab.on{border-color:var(--cran);background:#fbeef0}
 .adm-acts{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}.adm-meta{color:#55585d;margin-bottom:8px}
 .btn.danger{background:#c9302a;color:#fff;border-color:#8a1a16}
+
+.tvset{max-width:460px;margin:18px auto 8px;position:relative}
+.tv-ant{position:relative;height:46px}
+.tv-ant i{position:absolute;bottom:0;left:50%;width:3px;height:62px;background:linear-gradient(#cfd2d6,#6d7177);border-radius:2px;transform-origin:bottom center}
+.tv-ant i:first-child{transform:translateX(-14px) rotate(-32deg)}.tv-ant i:last-child{transform:translateX(10px) rotate(28deg)}
+.tv-ant i::after{content:"";position:absolute;top:-5px;left:-3px;width:9px;height:9px;border-radius:50%;background:#c9302a}
+.tv-ant::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:54px;height:16px;border-radius:30px 30px 0 0;background:#2a2b2e}
+.tv-cab{display:flex;gap:12px;align-items:stretch;padding:16px;border-radius:26px;background:linear-gradient(160deg,#8a5a34,#5e3a1f 55%,#4a2c16);box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -6px 14px rgba(0,0,0,.35),0 18px 34px rgba(0,0,0,.45);position:relative}
+.tv-cab::before{content:"";position:absolute;inset:6px;border-radius:21px;background:repeating-linear-gradient(95deg,rgba(255,255,255,.03) 0 3px,rgba(0,0,0,.05) 3px 7px);pointer-events:none}
+.tv-bezel{flex:1;padding:12px;border-radius:20px;background:linear-gradient(#2b2c2f,#151618);box-shadow:inset 0 0 0 2px #3c3d41,inset 0 6px 14px rgba(0,0,0,.6)}
+.tv-screen{display:block;width:100%;aspect-ratio:4/3;border:0;padding:0;cursor:pointer;position:relative;overflow:hidden;border-radius:26px/22px;background:radial-gradient(ellipse at 50% 45%,#1d2a2a 0%,#0b1010 70%,#050707 100%);box-shadow:inset 0 0 40px rgba(0,0,0,.9),0 0 0 1px #000;color:#f3efe6}
+.tv-screen:focus-visible{outline:3px solid #e2b93a;outline-offset:3px}
+.tv-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8% 9%;text-shadow:0 0 6px rgba(255,248,230,.45),0 0 1px #fff;filter:blur(.2px)}
+.tv-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);pointer-events:none;mix-blend-mode:multiply}
+.tv-glare{position:absolute;inset:0;background:radial-gradient(ellipse at 28% 18%,rgba(255,255,255,.14),transparent 45%),radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,.55) 100%);pointer-events:none}
+.tv-static{position:absolute;inset:-20%;opacity:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.tvset.flick .tv-static{animation:tvstatic .16s steps(3) 1}
+.tvset.flick .tv-frame{animation:tvout .14s ease-in forwards}
+.tvset.enter .tv-frame>.cr{animation:crin .7s ease-out both}
+@keyframes tvstatic{0%{opacity:.9;transform:translate(0,0)}50%{opacity:.75;transform:translate(-6%,4%)}100%{opacity:0;transform:translate(4%,-3%)}}
+@keyframes tvout{to{opacity:0;transform:scaleY(.04);filter:brightness(3)}}
+@keyframes crin{0%{opacity:0;transform:scale(1.04);letter-spacing:.02em}100%{opacity:1;transform:none}}
+.cr{text-align:center;width:100%}
+.cr-k{font:600 clamp(11px,3vw,13.5px) 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#e9c46a;margin-bottom:12px}
+.cr-t{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:clamp(21px,6vw,30px);line-height:1.2;text-wrap:balance}
+.cr-s{font:400 clamp(13px,3.6vw,16px)/1.45 'Hanken Grotesk',system-ui,sans-serif;margin-top:12px;color:#d8d2c4;text-wrap:balance}
+.cr-k+.cr-s{margin:-4px 0 10px}
+.cr-prod img{display:block;width:62%;max-width:240px;height:auto;margin:4px auto 10px;filter:drop-shadow(0 0 8px rgba(255,248,230,.35))}
+.cr-prod .cr-k:last-child{margin:0}
+.cr-title .cr-blank{font-family:'Redbell','Cortesia',cursive;font-size:clamp(30px,9vw,44px);color:#f3efe6;line-height:1}
+.cr-title .cr-blank::after{content:"";display:block;width:62%;height:2px;margin:8px auto 6px;background:#e9c46a;box-shadow:0 0 6px rgba(233,196,106,.7)}
+.cr-title .cr-xmas{font-family:'Redbell','Cortesia',cursive;font-size:clamp(40px,12.5vw,64px);line-height:1.05;color:#fff;text-shadow:0 0 10px rgba(201,48,42,.85),0 0 22px rgba(201,48,42,.5)}
+.tv-panel{width:64px;flex:none;border-radius:14px;background:linear-gradient(#3a2414,#2a190c);box-shadow:inset 0 0 0 2px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px 0;position:relative;z-index:1}
+.tv-brand{font:700 8.5px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.16em;color:#d9b77a}
+.tv-knob{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2f3f5,#9a9ea4 55%,#55595f);box-shadow:0 3px 6px rgba(0,0,0,.5);position:relative}
+.tv-knob::after{content:"";position:absolute;left:50%;top:5px;width:3px;height:13px;margin-left:-1.5px;background:#2b2c2f;border-radius:2px;transform-origin:50% 15px;transform:rotate(40deg)}
+.tv-knob.sm{width:28px;height:28px}.tv-knob.sm::after{height:9px;top:4px;transform-origin:50% 10px;transform:rotate(-60deg)}
+.tv-ch{margin-top:auto;font:700 10px 'Hanken Grotesk',system-ui,sans-serif;color:#1d1d1f;background:#e9c46a;padding:3px 6px;border-radius:4px;letter-spacing:.08em}
+.tv-foot{text-align:center;margin-top:14px}
+.tv-dots{display:flex;gap:6px;justify-content:center}
+.tv-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}.tv-dots i.seen{background:rgba(255,255,255,.65)}.tv-dots i.on{background:#e9c46a;box-shadow:0 0 0 3px rgba(233,196,106,.3)}
+.tv-hint{margin-top:10px;color:#fff;font:500 14.5px 'Hanken Grotesk',system-ui,sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+@media (max-width:420px){.tv-cab{padding:12px;gap:8px;border-radius:22px}.tv-bezel{padding:8px;border-radius:16px}.tv-panel{width:46px;gap:9px}.tv-knob{width:30px;height:30px}.tv-knob.sm{width:22px;height:22px}.tv-brand{font-size:6.5px}}
+@media (prefers-reduced-motion:reduce){.tvset.flick .tv-static,.tvset.flick .tv-frame,.tvset.enter .tv-frame>.cr{animation:none}}
 .hcredit{margin:54px 0 0;color:#fff}
 .hcredit div{font-weight:400;font-family:'Cortesia',cursive;font-size:22px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .hcredit img{display:block;width:62%;max-width:260px;height:auto;margin:10px auto 0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
@@ -1145,9 +1189,39 @@ function vLobby(){
   <p class="center" style="margin:10px 0"><button class="btn small" data-act="howto" style="background:rgba(20,12,10,.6);color:#fff;border-color:rgba(255,255,255,.5)">Here's how it works</button></p>
   ${host?`<p class="fine">Tip: tap the TV button on a laptop hooked up to the TV for the big-screen view.</p>`:''}`;
 }
+
+/* ------------------------------------------------------------------ solo opening credits (TV) */
+const CREDITS=[
+ {k:'Every December',t:'the same woman steps off the same train into the same snow-globe town.'},
+ {t:'She is a big shot in the city.',s:'She has forgotten what Christmas means.'},
+ {k:'Within ninety minutes',s:'(minus commercials)',t:'she will fall in love with a man in flannel.'},
+ {t:'She arrives with a name that sounds like a scented candle,',s:'and a job that makes no sense in a town of 400.'},
+ {k:'Something drags her home',t:'A will. A failing family bakery. A fiancé who does not technically exist.'},
+ {t:'She collides with a handsome stranger,',s:'usually while carrying too much gingerbread.'},
+ {k:'And just as the snow begins to fall',t:'a twist threatens to ruin everything.'},
+ {k:'Tonight',t:'you tell her story.',s:'Fate hands you the pieces, one cheesy chapter at a time. Then you pitch it to the network.'},
+ {t:'The cocoa is hot. The snow is fake.',s:"Let's make a terrible movie."},
+ {prod:true},
+ {title:true}
+];
+function creditFrame(i){const f=CREDITS[i];
+  if(f.prod)return `<div class="cr cr-prod"><div class="cr-k">A</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290"><div class="cr-k">Production</div></div>`;
+  if(f.title)return `<div class="cr cr-title"><div class="cr-blank">Blank</div><div class="cr-xmas">for Christmas</div></div>`;
+  return `<div class="cr">${f.k?`<div class="cr-k">${esc(f.k)}</div>`:''}${f.t?`<div class="cr-t">${esc(f.t)}</div>`:''}${f.s?`<div class="cr-s">${esc(f.s)}</div>`:''}</div>`;}
+function tvHTML(){const i=Math.min(S.ui.tvFrame||0,CREDITS.length-1),last=i===CREDITS.length-1;
+  return `<div class="tvset" role="region" aria-label="Opening credits">
+   <div class="tv-ant" aria-hidden="true"><i></i><i></i></div>
+   <div class="tv-cab"><div class="tv-bezel"><button class="tv-screen" data-act="tvTap" aria-label="${last?'Replay the opening credits':'Next credit'}">
+     <div class="tv-frame" id="tvFrame">${creditFrame(i)}</div><div class="tv-static" aria-hidden="true"></div><div class="tv-lines" aria-hidden="true"></div><div class="tv-glare" aria-hidden="true"></div>
+   </button></div>
+   <div class="tv-panel" aria-hidden="true"><span class="tv-brand">FUNHOUSE</span><span class="tv-knob"></span><span class="tv-knob sm"></span><span class="tv-ch">CH 3</span></div></div>
+   <div class="tv-foot"><div class="tv-dots">${CREDITS.map((_,k)=>`<i class="${k===i?'on':k<i?'seen':''}"></i>`).join('')}</div>
+   <div class="tv-hint" id="tvHint">${last?'Roll it again? Tap the screen. Or start Round 1 below.':i===0?'Tap the screen to roll the credits':'Tap for the next credit'}</div></div></div>`;}
+
 function vIntro(){
   const g=S.game,c=g.content;
   const needs=[...new Set(ROUND_KEYS.concat('twist').map(k=>{const m=mechOf(k);return g.mechanics[k]==='custom'?null:m.prop;}).filter(Boolean))];
+  if(g.solo)return `<div class="round-head"><div class="eyebrow">Now presenting</div><h2>Opening credits</h2>${slrow('Director: you','—',1)}</div>${tvHTML()}`;
   return `<div class="round-head"><div class="eyebrow">Now presenting</div><h2>${esc(c.title)}</h2>${slrow('Director: you &amp; your friends','—',1)}</div>
   ${c.openingCue?`<div class="cue"><span class="cue-l">Host cue</span>${esc(c.openingCue)}</div>`:''}
   <div class="paper cream" style="font-size:17px;line-height:1.55">${nl2p(c.intro)}</div>
@@ -1448,7 +1522,7 @@ A.qmBack=()=>{S.ui.qmSolo=false;$('#sheet').innerHTML=quickMenuHTML();};
 A.qmSolo=()=>{S.ui.qmSolo=true;$('#sheet').innerHTML=quickMenuHTML();setTimeout(()=>{const i=$('#soloName');if(i)i.focus();},50);};
 A.qmPrint=async()=>{closeModal();await A.printPlay();};
 A.quickOnline=()=>{if(S.busy)return;if(!S.caps.db){toast('Online games need this page opened from the website or Claude.');return;}closeModal();S.draft=newDraft('marco');S.draft.quick=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='online';A.createGame();};
-A.startSolo=async()=>{if(S.busy)return;const name=(($('#soloName')||{}).value||'').trim()||'You';closeModal();S.ui.qmSolo=false;
+A.startSolo=async()=>{if(S.busy)return;S.ui.tvFrame=0;const name=(($('#soloName')||{}).value||'').trim()||'You';closeModal();S.ui.qmSolo=false;
   S.draft=newDraft('marco');S.draft.quick=true;S.draft.solo=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';
   await A.createGame();if(!S.store||!S.game)return;
   await S.store.setPlayer('p'+rid(8),{name,controller:S.myUid,joinedAt:Date.now(),color:COLORS[0]});
@@ -2500,6 +2574,10 @@ A.admRefresh=()=>adminLoad();
 A.admDelAsk=el=>{S.ui.admDel=el.dataset.id;render();};
 A.admAct=async el=>{el.disabled=true;try{await adminFetch('POST',{id:el.dataset.id,action:el.dataset.a});S.ui.admDel=null;toast(({approve:'Inducted',feature:"Marco's pick",unfeature:'Pick removed',reject:'Rejected',pending:'Back in pending',delete:'Deleted'})[el.dataset.a]||'Done');await adminLoad();}catch(e){el.disabled=false;toast(e.code==='pw'?'Log in again':'That didn’t go through');if(e.code==='pw')render();}};
 A.admCopy=async()=>{const list=(S.ui.adm&&S.ui.adm.optins)||[];if(!list.length){toast('No sign-ups yet');return;}try{await navigator.clipboard.writeText(list.join('\n'));toast(list.length+' email'+(list.length===1?'':'s')+' copied');}catch(e){toast('Copy failed');}};
+A.tvTap=()=>{const n=CREDITS.length;let i=S.ui.tvFrame||0;i=i>=n-1?0:i+1;S.ui.tvFrame=i;
+  const scr=document.querySelector('.tvset');if(!scr){render();return;}
+  scr.classList.remove('flick');void scr.offsetWidth;scr.classList.add('flick');
+  setTimeout(()=>{const host=document.querySelector('.tvset');if(host)host.outerHTML=tvHTML();const nw=document.querySelector('.tvset');if(nw){nw.classList.add('enter');}},140);};
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML(t));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
 
 /* events */
