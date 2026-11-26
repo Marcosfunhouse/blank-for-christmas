@@ -415,6 +415,15 @@ body[data-wrap="photo"] #flakes{display:block}
 .tv-knob::after{content:"";position:absolute;left:50%;top:5px;width:3px;height:13px;margin-left:-1.5px;background:#2b2c2f;border-radius:2px;transform-origin:50% 15px;transform:rotate(40deg)}
 .tv-knob.sm{width:28px;height:28px}.tv-knob.sm::after{height:9px;top:4px;transform-origin:50% 10px;transform:rotate(-60deg)}
 .tv-ch{margin-top:auto;font:700 10px 'Hanken Grotesk',system-ui,sans-serif;color:#1d1d1f;background:#e9c46a;padding:3px 6px;border-radius:4px;letter-spacing:.08em}
+.tv-back{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;cursor:pointer;color:#2b2c2f}
+.tv-push{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#f7f7f8,#b9bcc1 60%,#7d8188);box-shadow:0 3px 0 #3a2414,0 4px 8px rgba(0,0,0,.5),inset 0 -2px 3px rgba(0,0,0,.25);transition:transform .08s,box-shadow .08s}
+.tv-push svg{width:18px;height:18px}
+.tv-back:active .tv-push{transform:translateY(2px);box-shadow:0 1px 0 #3a2414,0 2px 4px rgba(0,0,0,.5),inset 0 -1px 2px rgba(0,0,0,.25)}
+.tv-back:focus-visible{outline:2px solid #e9c46a;outline-offset:3px;border-radius:8px}
+.tv-lbl{font:700 8.5px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.14em;color:#d9b77a}
+.tv-back[disabled]{cursor:default}.tv-back[disabled] .tv-push{opacity:.45}.tv-back[disabled] .tv-lbl{opacity:.45}
+.tv-go{margin-top:12px}
+@media (max-width:420px){.tv-push{width:30px;height:30px}.tv-push svg{width:15px;height:15px}.tv-lbl{font-size:7px}}
 .tv-foot{text-align:center;margin-top:14px}
 .tv-dots{display:flex;gap:6px;justify-content:center}
 .tv-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}.tv-dots i.seen{background:rgba(255,255,255,.65)}.tv-dots i.on{background:#e9c46a;box-shadow:0 0 0 3px rgba(233,196,106,.3)}
@@ -1166,7 +1175,7 @@ function vGame(){
 }
 function hostBar(){
   const g=S.game;if(!isHost())return '';
-  const nxt={lobby:['Roll the opening credits','intro'],intro:['Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:g.solo?['Send it to the studio','results']:['Start the pitches','pitch'],pitch:g.solo?['Send it to the studio','results']:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
+  const nxt={lobby:['Roll the opening credits','intro'],intro:[g.solo?"Let's meet our leading lady":'Start Round 1','name'],name:['On to Round 2','career'],career:['On to Round 3','motive'],motive:['On to Round 4','hunk'],hunk:['On to the twist','twist'],twist:['Start pitch prep','prep'],prep:g.solo?['Send it to the studio','results']:['Start the pitches','pitch'],pitch:g.solo?['Send it to the studio','results']:['Open voting','vote'],vote:['Reveal the winner','results']}[g.phase];
   if(!nxt)return '';
   let status='';const ps=plist();
   if(ROUND_KEYS.includes(g.phase)){const n=ps.filter(p=>isDone(p,g.phase)).length;status=`${n}/${ps.length} done`;}
@@ -1215,12 +1224,12 @@ function creditFrame(i){const f=CREDITS[i];
 function tvHTML(){const i=Math.min(S.ui.tvFrame||0,CREDITS.length-1),last=i===CREDITS.length-1;
   return `<div class="tvset" role="region" aria-label="Opening credits">
    <div class="tv-ant" aria-hidden="true"><i></i><i></i></div>
-   <div class="tv-cab"><div class="tv-bezel"><button class="tv-screen" data-act="tvTap" aria-label="${last?'Replay the opening credits':'Next credit'}">
+   <div class="tv-cab"><div class="tv-bezel"><button class="tv-screen" data-act="tvTap" aria-label="${last?"Let's meet our leading lady":'Next credit'}">
      <div class="tv-bg" style="background-size:${CREDIT_SHOTS[i][0]};background-position:${CREDIT_SHOTS[i][1]}"></div><div class="tv-shade ${CREDITS[i].prod?'deep':''}"></div><div class="tv-frame" id="tvFrame">${creditFrame(i)}</div><div class="tv-static" aria-hidden="true"></div><div class="tv-lines" aria-hidden="true"></div><div class="tv-glare" aria-hidden="true"></div>
    </button></div>
-   <div class="tv-panel" aria-hidden="true"><span class="tv-brand">FUNHOUSE</span><span class="tv-knob"></span><span class="tv-knob sm"></span><span class="tv-ch">CH 3</span></div></div>
+   <div class="tv-panel"><span class="tv-brand" aria-hidden="true">FUNHOUSE</span><span class="tv-knob" aria-hidden="true"></span><button class="tv-back" data-act="tvBack" ${i===0?'disabled':''} aria-label="Previous credit"><span class="tv-push"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tv-lbl">BACK</span></button><span class="tv-ch" aria-hidden="true">CH 3</span></div></div>
    <div class="tv-foot"><div class="tv-dots">${CREDITS.map((_,k)=>`<i class="${k===i?'on':k<i?'seen':''}"></i>`).join('')}</div>
-   <div class="tv-hint" id="tvHint">${last?'Roll it again? Tap the screen. Or start Round 1 below.':i===0?'Tap the screen to roll the credits':'Tap for the next credit'}</div></div></div>`;}
+   <div class="tv-hint" id="tvHint">${last?'Tap the screen to meet our leading lady':i===0?'Tap the screen to roll the credits':'Tap for the next credit'}</div></div></div>`;}
 
 function vIntro(){
   const g=S.game,c=g.content;
@@ -2578,10 +2587,13 @@ A.admRefresh=()=>adminLoad();
 A.admDelAsk=el=>{S.ui.admDel=el.dataset.id;render();};
 A.admAct=async el=>{el.disabled=true;try{await adminFetch('POST',{id:el.dataset.id,action:el.dataset.a});S.ui.admDel=null;toast(({approve:'Inducted',feature:"Marco's pick",unfeature:'Pick removed',reject:'Rejected',pending:'Back in pending',delete:'Deleted'})[el.dataset.a]||'Done');await adminLoad();}catch(e){el.disabled=false;toast(e.code==='pw'?'Log in again':'That didn’t go through');if(e.code==='pw')render();}};
 A.admCopy=async()=>{const list=(S.ui.adm&&S.ui.adm.optins)||[];if(!list.length){toast('No sign-ups yet');return;}try{await navigator.clipboard.writeText(list.join('\n'));toast(list.length+' email'+(list.length===1?'':'s')+' copied');}catch(e){toast('Copy failed');}};
-A.tvTap=()=>{const n=CREDITS.length;let i=S.ui.tvFrame||0;i=i>=n-1?0:i+1;S.ui.tvFrame=i;
+function tvShow(i){S.ui.tvFrame=i;
   const scr=document.querySelector('.tvset');if(!scr){render();return;}
   scr.classList.remove('flick');void scr.offsetWidth;scr.classList.add('flick');
-  setTimeout(()=>{const host=document.querySelector('.tvset');if(host)host.outerHTML=tvHTML();const nw=document.querySelector('.tvset');if(nw){nw.classList.add('enter');}},140);};
+  setTimeout(()=>{const host=document.querySelector('.tvset');if(host)host.outerHTML=tvHTML();const nw=document.querySelector('.tvset');if(nw){nw.classList.add('enter');}},140);}
+A.tvTap=()=>{const i=S.ui.tvFrame||0;if(i>=CREDITS.length-1)return A.tvGo();tvShow(i+1);};
+A.tvBack=()=>{const i=S.ui.tvFrame||0;if(i>0)tvShow(i-1);};
+A.tvGo=()=>{if(!S.game||S.game.phase!=='intro')return;A.advance({dataset:{to:'name'}});};
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML(t));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
 
 /* events */
