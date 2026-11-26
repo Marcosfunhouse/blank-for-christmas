@@ -1473,7 +1473,7 @@ function vSoloResults(){
     ${v.pass?'':`<div class="row" style="margin-top:14px"><button class="btn primary" data-act="soloRewrite">Back to the writers' room</button><span class="spacer"></span><button class="link" data-act="leave">Call it a night</button></div><p class="small muted" style="margin-top:8px">Your pitch is saved. Punch it up and send it back as Take ${take+1}.</p>`}</div>`;
   const reviews=v.pass&&v.reviews&&v.reviews.length?`<div class="paper"><div class="eyebrow">What audiences are saying</div>${v.reviews.map(r=>`<figure class="aud"><blockquote>“${esc(r.q)}”</blockquote><figcaption>${esc(r.w)}</figcaption></figure>`).join('')}</div>`:'';
   if(!v.pass)return slate+banner+notes+`<div class="mcards">${movieCard(p,false,true)}</div>`;
-  return slate+banner+reviews+notes+recapCard()+hofCard()+notesCard()+endCard()+`<div class="mcards">${movieCard(p,true)}</div>
+  return slate+banner+reviews+notes+recapCard()+hofCard()+endCard()+notesCard()+`<div class="mcards">${movieCard(p,true)}</div>
     <div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again</button><button class="btn" data-act="leave">Back to start</button></div>`;
 }
 function vResults(){
@@ -1487,8 +1487,8 @@ function vResults(){
   ${solo?`<div class="paper center"><div class="eyebrow">Studio note</div><p style="font-size:17px;margin:4px 0 0">${esc(soloNote())}</p></div>`:`<div class="paper"><h3>The votes</h3>${sorted.map(p=>`<div class="tally"><span class="dot" style="background:${p.color}"></span><span style="width:120px" class="pname">${esc(p.name)}</span><div class="bar" style="width:${max?((t[p.id]||0)/max*60):0}%"></div><b>${t[p.id]||0}</b></div>`).join('')}</div>`}
   ${recapCard()}
   ${hofCard()}
-  ${notesCard()}
   ${endCard()}
+  ${notesCard()}
   <div class="mcards">${sorted.map(p=>movieCard(p,true)).join('')}</div>
   ${isHost()?`<div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again, same setup</button><button class="btn" data-act="leave">New game</button></div>`:''}`;
 }
