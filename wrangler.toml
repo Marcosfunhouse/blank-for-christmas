@@ -9,15 +9,25 @@ compatibility_date = "2026-11-20"
 directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
+not_found_handling = "single-page-application"   # /hall-of-fame and /admin open the game page
 
 # One live "room" per game code (multiplayer), plus small counters for AI limits.
 [[durable_objects.bindings]]
 name = "ROOMS"
 class_name = "Room"
 
+# The Hall of Fame: one small database of submitted pitches.
+[[durable_objects.bindings]]
+name = "HOF"
+class_name = "HallOfFame"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["HallOfFame"]
 
 [observability]
 enabled = true
@@ -30,4 +40,6 @@ MODEL_DEFAULT = "claude-haiku-5-5" # whole-game writing and posters
 AI_ROOM_LIMIT = "60"           # AI calls allowed per game room
 AI_IP_DAILY_LIMIT = "120"      # AI calls allowed per internet connection per day
 ROOM_TTL_HOURS = "36"          # rooms delete themselves this long after the last move
+HOF_IP_DAILY_LIMIT = "10"      # Hall of Fame submissions allowed per internet connection per day
+# The admin password for /admin is a secret named ADMIN_PASSWORD (not here).
 # The Claude API key is NOT here. Add it as a secret named ANTHROPIC_API_KEY (see README).

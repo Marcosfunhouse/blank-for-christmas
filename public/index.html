@@ -364,6 +364,16 @@ body[data-wrap="photo"] #flakes{display:block}
 .hp-btn b{font-size:28px}
 .sample-plot p{margin:0 0 10px;font-size:15.5px;line-height:1.5}
 .sample-note{margin-top:6px;padding:10px 12px;border-left:4px solid #2e9a4f;background:#eef6ea;border-radius:6px;font-size:14.5px}
+.hp-link{display:block;margin:14px auto 0;background:none;border:0;color:#fff;font:500 15.5px 'Hanken Grotesk',system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px}
+.hof-row{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff}
+.hof-row b{display:block}.hof-row .small{display:block}
+.hof-checks{display:grid;gap:8px;margin:14px 0 6px}.hof-checks label{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;line-height:1.4}.hof-checks input{margin-top:3px;flex:none;width:18px;height:18px}
+.hofpitch.feat{border:2px solid #e2b93a}
+.hof-ribbon{display:inline-block;background:#c9302a;color:#fff;font:600 11.5px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:6px;margin-bottom:10px}
+.hof-by{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#55585d;margin:0 0 8px}
+.adm-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.adm-tab{margin:0;padding:10px;text-align:center}.adm-tab.on{border-color:var(--cran);background:#fbeef0}
+.adm-acts{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}.adm-meta{color:#55585d;margin-bottom:8px}
+.btn.danger{background:#c9302a;color:#fff;border-color:#8a1a16}
 .hcredit{margin:54px 0 0;color:#fff}
 .hcredit div{font-weight:400;font-family:'Cortesia',cursive;font-size:22px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .hcredit img{display:block;width:62%;max-width:260px;height:auto;margin:10px auto 0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
@@ -904,6 +914,8 @@ function render(){
       case 'join':h=vJoin();break;
       case 'import':h=vImport();break;
       case 'game':h=vGame();break;
+      case 'hof':h=vHof();break;
+      case 'admin':h=vAdmin();break;
       default:h=vHome();
     }
   }catch(e){console.error(e);h=`<div class="paper"><h3>Something went sideways</h3><p class="small muted">${esc(e.message)}</p><button class="btn" data-act="home">Back to start</button></div>`;}
@@ -912,6 +924,7 @@ function render(){
   if(keep){const el=document.querySelector(`[data-k="${CSS.escape(keep.k)}"]`);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(e){}}}
   if(document.querySelector('.sc-ticket'))mountScratch();
   if(document.querySelector('.flapboard'))mountFlaps();
+  if(S.web){const want=S.view==='hof'?'/hall-of-fame':S.view==='admin'?'/admin':'/';if(location.pathname!==want)try{history.replaceState(null,'',want);}catch(e){}}
   tick();document.body.dataset.wrap=wrapFor();document.body.dataset.scene=S.view==='game'?((S.game&&S.game.phase)||'lobby'):S.view;
 }
 function wrapFor(){return S.view==='home'?'photo':'scene';const p=S.game&&S.game.phase;return ({lobby:'plaid',intro:'stars',name:'candy',career:'gold',motive:'plaid',hunk:'dots',twist:'stars',prep:'kraft',pitch:'gold',vote:'candy',results:'dots'})[p]||'dots';}
@@ -961,7 +974,7 @@ function vHome(){
     <button class="hbtn hb-blue" data-act="goSetup"><b>Make it your own!</b><span>You're the producer</span></button>
   </div>
   <section class="hpeek"><h2 class="hp-h">Previously on Blank for Christmas</h2>
-   <button class="hbtn hb-pink hp-btn" data-act="sample"><b>Show me a sample pitch!</b></button></section>
+   <button class="hbtn hb-pink hp-btn" data-act="sample"><b>Show me a sample pitch!</b></button>${S.web?`<button class="hp-link" data-act="hofView">Visit the Hall of Fame</button>`:''}</section>
   ${saved?`<div class="hlinks"><button data-act="resume">Resume the game in progress</button></div>`:''}
   <footer class="hcredit"><div>An original game from the mind of</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290">${mfLinks()}${mfSupport()}</footer>
   </div>`;
@@ -1308,7 +1321,7 @@ function vSoloResults(){
     ${v.pass?'':`<div class="row" style="margin-top:14px"><button class="btn primary" data-act="soloRewrite">Back to the writers' room</button><span class="spacer"></span><button class="link" data-act="leave">Call it a night</button></div><p class="small muted" style="margin-top:8px">Your pitch is saved. Punch it up and send it back as Take ${take+1}.</p>`}</div>`;
   const reviews=v.pass&&v.reviews&&v.reviews.length?`<div class="paper"><div class="eyebrow">What audiences are saying</div>${v.reviews.map(r=>`<figure class="aud"><blockquote>“${esc(r.q)}”</blockquote><figcaption>${esc(r.w)}</figcaption></figure>`).join('')}</div>`:'';
   if(!v.pass)return slate+banner+notes+`<div class="mcards">${movieCard(p,false,true)}</div>`;
-  return slate+banner+reviews+notes+recapCard()+endCard()+`<div class="mcards">${movieCard(p,true)}</div>
+  return slate+banner+reviews+notes+recapCard()+hofCard()+endCard()+`<div class="mcards">${movieCard(p,true)}</div>
     <div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again</button><button class="btn" data-act="leave">Back to start</button></div>`;
 }
 function vResults(){
@@ -1321,6 +1334,7 @@ function vResults(){
    <h2>${winners.length?winners.map(w=>esc((w.pitch&&w.pitch.title)||fullName(w)||w.name)).join(' & '):'No votes cast'}</h2>${winners.length===1&&winners[0].pitch&&winners[0].pitch.tagline?`<p style="font-style:italic;margin:4px 0">${esc(winners[0].pitch.tagline)}</p>`:''}${winners.length?`<p style="color:#e3dacb">starring ${winners.map(w=>esc(fullName(w)||'?')).join(' & ')} · pitched by ${winners.map(w=>esc(w.name)).join(' & ')}</p>`:''}${slrow('That\'s a wrap',9,1)}</div>
   ${solo?`<div class="paper center"><div class="eyebrow">Studio note</div><p style="font-size:17px;margin:4px 0 0">${esc(soloNote())}</p></div>`:`<div class="paper"><h3>The votes</h3>${sorted.map(p=>`<div class="tally"><span class="dot" style="background:${p.color}"></span><span style="width:120px" class="pname">${esc(p.name)}</span><div class="bar" style="width:${max?((t[p.id]||0)/max*60):0}%"></div><b>${t[p.id]||0}</b></div>`).join('')}</div>`}
   ${recapCard()}
+  ${hofCard()}
   ${endCard()}
   <div class="mcards">${sorted.map(p=>movieCard(p,true)).join('')}</div>
   ${isHost()?`<div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again, same setup</button><button class="btn" data-act="leave">New game</button></div>`:''}`;
@@ -2378,6 +2392,112 @@ function sampleHTML(){const x=SAMPLE,c=MARCO;
  <div class="row" style="margin-top:14px;justify-content:space-between"><button class="link" data-act="closeModal">Close</button><button class="btn primary" data-act="sampleGo">Make your own</button></div></div>`;}
 A.sample=()=>{$('#sheet').classList.add('wide');modal(sampleHTML());const sh=$('#sheet');if(sh)sh.scrollTop=0;};
 A.sampleGo=()=>{closeModal();setTimeout(()=>A.quickMenu(),60);};
+
+/* ------------------------------------------------------------------ hall of fame */
+function hofEntry(p){const c=C(),pp=p.pitch||{},m=c.motives[p.motive],h=c.hunks[p.hunk],sl=slipOf(p);
+  return {title:pp.title||'',tagline:pp.tagline||'',plot:pp.plot||'',who:fullName(p)||'',career:p.career!=null?(c.careers[p.career]||''):'',motive:m?m.title:'',hunk:h?h.title:'',flag:h&&h.redflag?h.redflag:'',
+    twist:sl&&sl.answers?c.twistQuestions.map((q,i)=>({q,a:sl.answers[i]||''})).filter(t=>t.a):[]};}
+function hofSentKey(pid){return 'hof:'+((S.game&&(S.game.code||S.game.createdAt))||'x')+':'+pid;}
+function hofCard(){if(!S.web)return '';
+  const ps=plist().filter(p=>p.pitch&&p.pitch.title&&p.pitch.plot&&canAct(p));if(!ps.length)return '';
+  const sent=ls('hmh_hof_sent')||{};
+  return `<div class="paper hofcard"><div class="eyebrow">The Hall of Fame</div><h3>Think ${ps.length>1?'one of these is':'yours is'} a classic?</h3>
+  <p class="small muted">Send it to Marco's Funhouse. Our favorites get inducted into the Hall of Fame.</p>
+  <div class="stack" style="margin-top:10px">${ps.map(p=>`<div class="hof-row"><div><b>${esc(p.pitch.title)}</b>${S.game.solo?'':`<span class="small muted">pitched by ${esc(p.name)}</span>`}</div>${sent[hofSentKey(p.id)]?'<span class="done-badge">Sent</span>':`<button class="btn small primary" data-act="hofOpen" data-id="${p.id}">Submit</button>`}</div>`).join('')}</div>
+  <p class="small" style="margin:12px 0 0"><button class="link" data-act="hofView">See the Hall of Fame</button></p></div>`;}
+function hofFormHTML(p){const e=hofEntry(p);
+  return `<div class="hofform"><div class="eyebrow">Submit to the Hall of Fame</div>
+  <div class="pitchblock big" style="padding:6px 0 4px;border:0;background:none"><div class="pb-title">${esc(e.title)}</div>${e.tagline?`<div class="pb-tag">${esc(e.tagline)}</div>`:''}</div>
+  <label class="f" for="hofCredit">Credit it to</label><input class="t" id="hofCredit" maxlength="60" value="${esc(e.who||p.name)}">
+  <p class="small muted" style="margin:4px 0 0">Your character name is the classic move. Real first names are fine too.</p>
+  <label class="f" for="hofCity">City (optional)</label><input class="t" id="hofCity" maxlength="60" placeholder="e.g. Milwaukee" autocomplete="address-level2">
+  <label class="f" for="hofEmail">Email (optional)</label><input class="t" id="hofEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="Only so we can tell you if it gets in">
+  <input id="hofWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
+  <div class="checks hof-checks"><label><input type="checkbox" id="hofConsent"> Marco's Funhouse can share this pitch publicly, on the site and on social.</label>
+  <label><input type="checkbox" id="hofNews"> Sign me up for the Gooseletter too.</label></div>
+  <p class="small muted">Every pitch is reviewed before it goes up. Your email is never shown.</p>
+  <div class="row" style="margin-top:12px;justify-content:space-between"><button class="link" data-act="closeModal">Cancel</button><button class="btn primary" data-act="hofSend" data-id="${p.id}">Send it in</button></div></div>`;}
+A.hofOpen=el=>{const p=S.players[el.dataset.id];if(!p)return;modal(hofFormHTML({id:el.dataset.id,...p}));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
+A.hofSend=async el=>{const pid=el.dataset.id,p=S.players[pid];if(!p||el.disabled)return;
+  const v=id=>{const x=document.getElementById(id);return x?(x.type==='checkbox'?x.checked:x.value.trim()):'';};
+  if(!v('hofCredit')){toast('Add a name for the credit');return;}
+  if(!v('hofConsent')){toast('Tick the box so we can share it');return;}
+  const email=v('hofEmail');if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('That email looks off');return;}
+  if(v('hofNews')&&!email){toast('Add your email for the Gooseletter');return;}
+  el.disabled=true;el.innerHTML='<span class="spin-ld"></span>Sending…';
+  try{const r=await fetch('/api/hof/submit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...hofEntry({id:pid,...p}),credit:v('hofCredit'),city:v('hofCity'),email,newsletter:v('hofNews'),consent:true,website:v('hofWeb')})});
+    if(r.status===429){toast("That's a lot of classics for one day. Try again tomorrow.",4000);el.disabled=false;el.textContent='Send it in';return;}
+    if(!r.ok)throw new Error('send');
+    const sent=ls('hmh_hof_sent')||{};sent[hofSentKey(pid)]=Date.now();ls('hmh_hof_sent',sent);
+    $('#sheet').innerHTML=`<div class="hofform center"><div class="eyebrow">Submitted</div><h3 style="margin:8px 0">It's on the studio's desk</h3><p>We read every pitch. If it makes the Hall of Fame, it'll show up at blankforchristmas.com/hall-of-fame${email?' and we\u2019ll email you':''}.</p><div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" data-act="closeModal">Back to the party</button></div></div>`;
+    render();
+  }catch(e){toast("Couldn't send it. Check your connection and try again.",4000);el.disabled=false;el.textContent='Send it in';}};
+
+function hofPitchHTML(x,admin){
+  const row=(k,v)=>v?`<div class="ing-row"><dt>${k}</dt><dd>${v}</dd></div>`:'';
+  const tw=(x.twist||[]).filter(t=>t.a);
+  return `<article class="paper hofpitch ${x.featured?'feat':''}">${x.featured?`<div class="hof-ribbon">Marco's pick</div>`:''}
+  <div class="pitchblock big" style="padding:0 0 8px;border:0;background:none"><div class="pb-title">${esc(x.title)}</div>${x.tagline?`<div class="pb-tag">${esc(x.tagline)}</div>`:''}</div>
+  <div class="hof-by">Pitched by ${esc(x.credit||'Anonymous')}${x.city?`, ${esc(x.city)}`:''}</div>
+  ${(x.who||x.career||x.motive||x.hunk)?`<div class="ingredients"><dl>${row('Starring',esc(x.who))}${row('Holiday calling',esc(x.career))}${row('Coming home because',esc(x.motive))}${row('Falling for',x.hunk?esc(x.hunk)+(x.flag?` <span class="ing-flag">(red flag: ${esc(x.flag)})</span>`:''):'')}</dl>
+  ${tw.length?`<div class="ing-tw"><div class="ing-h">The twist</div><ul>${tw.map(t=>`<li><span class="ing-q">${esc(t.q)}</span> ${esc(t.a)}</li>`).join('')}</ul></div>`:''}</div>`:''}
+  <div class="pb-plot sample-plot">${nl2p(x.plot)}</div>${admin||''}</article>`;}
+function loadHof(){if(S.ui.hofLoading)return;S.ui.hofLoading=true;
+  fetch('/api/hof',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(j=>{S.ui.hof={list:j.list||[]};}).catch(()=>{S.ui.hof={error:true,list:[]};}).finally(()=>{S.ui.hofLoading=false;if(S.view==='hof')render();});}
+A.hofView=()=>{closeModal();S.view='hof';S.ui.hof=null;render();window.scrollTo(0,0);};
+function vHof(){
+  if(!S.web)return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div><div class="paper center"><h2>The Hall of Fame</h2><p>The Hall of Fame lives at blankforchristmas.com/hall-of-fame.</p></div>`;
+  const st=S.ui.hof;if(!st)loadHof();
+  const body=!st?`<div class="paper center"><span class="spin-ld"></span> Rolling the film…</div>`
+   :st.error?`<div class="paper center"><p>The projector jammed. Try again in a minute.</p><button class="btn" data-act="hofView">Try again</button></div>`
+   :!st.list.length?`<div class="paper center"><h3>No inductees yet</h3><p>Be the first. Play a game, write a pitch, and send it in from the results screen.</p><button class="btn primary" data-act="quickMenu">Play now</button></div>`
+   :st.list.map(x=>hofPitchHTML(x)).join('');
+  return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>
+  <div class="round-head"><div class="eyebrow">Marco's Funhouse presents</div><h2>The Hall of Fame</h2><p>The finest holiday movies never made. Pitched at real parties, approved by the studio.</p></div>
+  ${body}${st&&st.list.length?`<div class="row tctl" style="justify-content:center;margin:18px 0"><button class="btn gold" data-act="quickMenu">Make your own</button></div>`:''}`;}
+
+/* admin: review queue. Password lives only in this browser tab. */
+function adminPw(){try{return sessionStorage.getItem('hof_pw')||'';}catch(e){return S.ui.adminPw||'';}}
+function setAdminPw(v){S.ui.adminPw=v;try{v?sessionStorage.setItem('hof_pw',v):sessionStorage.removeItem('hof_pw');}catch(e){}}
+async function adminFetch(method,body){const st=(S.ui.adm&&S.ui.adm.tab)||'pending';
+  const r=await fetch('/api/hof/admin'+(method==='GET'?'?status='+st:''),{method,cache:'no-store',headers:{'x-admin-password':adminPw(),'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
+  if(r.status===401){setAdminPw('');throw Object.assign(new Error('pw'),{code:'pw'});}
+  if(r.status===503){const j=await r.json().catch(()=>({}));throw Object.assign(new Error('x'),{code:j.error||'off'});}
+  if(r.status===429)throw Object.assign(new Error('x'),{code:'limit'});
+  if(!r.ok)throw new Error('x');return r.json();}
+async function adminLoad(){const a=S.ui.adm||(S.ui.adm={tab:'pending'});a.loading=true;render();
+  try{const j=await adminFetch('GET');a.list=j.list;a.counts=j.counts||{};a.optins=j.optins||[];a.err=null;}
+  catch(e){a.err=e.code||'x';a.list=null;}a.loading=false;render();}
+function vAdmin(){
+  const a=S.ui.adm||(S.ui.adm={tab:'pending'});const head=`<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>`;
+  if(!S.web)return head+`<div class="paper"><p>The review page lives at blankforchristmas.com/admin.</p></div>`;
+  if(!adminPw()||a.err==='pw')return head+`<div class="paper"><h2>Studio office</h2><p class="small muted">Hall of Fame review. Enter the password you saved in Cloudflare as ADMIN_PASSWORD.</p>
+   ${a.err==='pw'?`<p class="small" style="color:var(--cran)">That password didn't work.</p>`:''}
+   <label class="f" for="admPw">Password</label><input class="t" id="admPw" type="password" autocomplete="current-password">
+   <div class="row" style="margin-top:12px"><button class="btn primary" data-act="admLogin">Open the office</button></div></div>`;
+  if(a.err==='not_set')return head+`<div class="paper"><h2>Almost there</h2><p>The ADMIN_PASSWORD secret isn't set in Cloudflare yet. Add it under Workers &amp; Pages, blank-for-christmas, Settings, Variables and Secrets.</p></div>`;
+  if(!a.list&&!a.loading&&!a.err){setTimeout(adminLoad,0);}
+  const c=a.counts||{};const tab=(k,l)=>`<button class="choice adm-tab ${a.tab===k?'on':''}" data-act="admTab" data-t="${k}"><b>${l}</b> <span class="small muted">${c[k]||0}</span></button>`;
+  const acts=x=>{const b=(act,l,cls)=>`<button class="btn small ${cls||''}" data-act="admAct" data-a="${act}" data-id="${x.id}">${l}</button>`;
+    const del=S.ui.admDel===x.id?b('delete','Tap again to delete','danger'):`<button class="btn small" data-act="admDelAsk" data-id="${x.id}">Delete</button>`;
+    const meta=`<div class="adm-meta small">${new Date(x.created).toLocaleString()} · ${x.email?esc(x.email)+(x.newsletter?' · wants the Gooseletter':''):'no email'}</div>`;
+    const btns=x.status==='pending'?b('approve','Approve','primary')+b('feature',"Approve as Marco's pick",'gold')+b('reject','Reject')
+      :x.status==='approved'?(x.featured?b('unfeature',"Remove Marco's pick"):b('feature',"Make it Marco's pick",'gold'))+b('pending','Back to pending')+b('reject','Reject')
+      :b('approve','Approve','primary')+b('pending','Back to pending');
+    return `<div class="adm-acts">${meta}<div class="row" style="gap:8px;flex-wrap:wrap">${btns}${del}</div></div>`;};
+  return head+`<div class="round-head"><div class="eyebrow">Studio office</div><h2>Hall of Fame review</h2><p>Nothing goes public until you approve it.</p></div>
+  <div class="paper"><div class="adm-tabs">${tab('pending','Pending')}${tab('approved','In the Hall')}${tab('rejected','Rejected')}</div>
+   <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><button class="btn small" data-act="admCopy">Copy Gooseletter sign-ups (${(a.optins||[]).length})</button><button class="btn small" data-act="admRefresh">Refresh</button><span class="spacer"></span><button class="link small" data-act="admLogout">Log out</button></div>
+   ${a.err&&a.err!=='pw'?`<p class="small" style="color:var(--cran);margin-top:10px">${a.err==='limit'?'Too many wrong passwords today. Try again tomorrow.':"Couldn't load the queue. Try Refresh."}</p>`:''}</div>
+  ${a.loading&&!a.list?`<div class="paper center"><span class="spin-ld"></span> Loading…</div>`:''}
+  ${a.list?(a.list.length?a.list.map(x=>hofPitchHTML(x,acts(x))).join(''):`<div class="paper center"><p>Nothing here right now.</p></div>`):''}`;}
+A.admLogin=()=>{const v=(document.getElementById('admPw')||{}).value||'';if(!v)return;setAdminPw(v);S.ui.adm={tab:'pending'};adminLoad();};
+A.admLogout=()=>{setAdminPw('');S.ui.adm={tab:'pending'};render();};
+A.admTab=el=>{const a=S.ui.adm;a.tab=el.dataset.t;a.list=null;S.ui.admDel=null;adminLoad();};
+A.admRefresh=()=>adminLoad();
+A.admDelAsk=el=>{S.ui.admDel=el.dataset.id;render();};
+A.admAct=async el=>{el.disabled=true;try{await adminFetch('POST',{id:el.dataset.id,action:el.dataset.a});S.ui.admDel=null;toast(({approve:'Inducted',feature:"Marco's pick",unfeature:'Pick removed',reject:'Rejected',pending:'Back in pending',delete:'Deleted'})[el.dataset.a]||'Done');await adminLoad();}catch(e){el.disabled=false;toast(e.code==='pw'?'Log in again':'That didn’t go through');if(e.code==='pw')render();}};
+A.admCopy=async()=>{const list=(S.ui.adm&&S.ui.adm.optins)||[];if(!list.length){toast('No sign-ups yet');return;}try{await navigator.clipboard.writeText(list.join('\n'));toast(list.length+' email'+(list.length===1?'':'s')+' copied');}catch(e){toast('Copy failed');}};
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML(t));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
 
 /* events */
@@ -2511,6 +2631,7 @@ async function webSample(prompt,opts){
 async function initWeb(){
   if(!/^https?:$/.test(location.protocol))return;
   S.web=true;S.caps.canWrite=true;
+  {const pth=location.pathname.replace(/\/+$/,'').toLowerCase(),h=location.hash.toLowerCase();if(pth==='/hall-of-fame'||h==='#hall-of-fame')S.view='hof';else if(pth==='/admin'||h==='#admin')S.view='admin';}
   S.caps.user={id:async()=>null,can:async()=>true};
   S.caps.downloads={save({filename,data}){const blob=new Blob([data],{type:/\.pdf$/i.test(filename)?'application/pdf':'application/octet-stream'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);}};
   try{const r=await fetch('/api/config',{cache:'no-store'});if(r.ok){S.caps.db=new WebDb();const c=await r.json();if(c.ai)S.caps.sample=webSample;}}catch(e){console.warn(e);}

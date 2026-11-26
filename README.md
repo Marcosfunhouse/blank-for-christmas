@@ -56,6 +56,16 @@ In Squarespace: **Settings → Developer tools → URL Mappings**, add:
 
 ---
 
+## Hall of Fame
+
+Players can send their pitch in from the results screen. Every submission waits for review.
+
+- Review queue: **blankforchristmas.com/admin** (password = the `ADMIN_PASSWORD` secret in Cloudflare).
+- Public page: **blankforchristmas.com/hall-of-fame**. Only approved pitches show; emails never do.
+- "Copy Gooseletter sign-ups" on the admin page copies every email that ticked the Gooseletter box.
+- Email alerts: needs Email Routing on blankforchristmas.com with a verified destination address, plus the
+  `HOF_EMAIL` send_email binding in `wrangler.toml`. Without it, submissions still save; you just get no email.
+
 ## Updating the game
 
 Any change saved to GitHub goes live automatically in about a minute.

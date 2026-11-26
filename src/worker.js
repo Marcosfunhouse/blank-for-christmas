@@ -3,6 +3,9 @@
 //   /api/room/CODE/peek   GET: does this game exist? (for the Join screen)
 //   /api/ai               POST: relays a request to Claude, with limits
 //   /api/config           GET: is AI switched on?
+//   /api/hof              GET: approved Hall of Fame pitches (public)
+//   /api/hof/submit       POST: send a pitch in for review
+//   /api/hof/admin        GET/POST: review queue (needs ADMIN_PASSWORD)
 // Everything else is the static game in /public.
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
@@ -13,7 +16,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 async function sha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join(''); }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
     const p = url.pathname;
 
@@ -28,6 +31,7 @@ export default {
     }
 
     if (p === '/api/ai' && req.method === 'POST') return ai(req, env);
+    if (p.startsWith('/api/hof')) return hof(req, env, ctx, p);
     if (p.startsWith('/api/')) return json({ error: 'not_found' }, 404);
     return env.ASSETS.fetch(req);
   }
@@ -69,6 +73,134 @@ async function ai(req, env) {
   const out = await r.json();
   const text = (out.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   return json({ text });
+}
+
+
+// ---------------------------------------------------------------- Hall of Fame
+// Pitches people send in. Everything lands as "pending"; nothing is public until approved.
+const hofStub = env => env.HOF.get(env.HOF.idFromName('hall-of-fame'));
+const clip = (v, n) => String(v == null ? '' : v).replace(/\u0000/g, '').trim().slice(0, n);
+const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
+
+async function counter(env, name, limit) {
+  const r = await env.ROOMS.get(env.ROOMS.idFromName(name)).fetch('https://do/count?limit=' + limit, { method: 'POST' });
+  return r.status !== 429;
+}
+async function adminOk(req, env) {
+  if (!env.ADMIN_PASSWORD) return 'not_set';
+  const given = req.headers.get('x-admin-password') || '';
+  const [a, b] = await Promise.all([sha('pw:' + given), sha('pw:' + env.ADMIN_PASSWORD)]);
+  let diff = a.length ^ b.length; for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  if (!diff) return 'ok';
+  const ip = req.headers.get('cf-connecting-ip') || 'local';
+  if (!(await counter(env, 'adminfail:' + (await sha(ip + ':' + today())), 30))) return 'limit';
+  return 'bad';
+}
+
+async function hof(req, env, ctx, p) {
+  if (!env.HOF) return json({ error: 'off' }, 503);
+  if (p === '/api/hof' && req.method === 'GET') return hofStub(env).fetch('https://do/public');
+
+  if (p === '/api/hof/submit' && req.method === 'POST') {
+    let b; try { b = await req.json(); } catch { return json({ error: 'bad_request' }, 400); }
+    if (b.website) return json({ ok: true });                       // honeypot: bots fill every field
+    if (b.consent !== true) return json({ error: 'consent' }, 400);
+    const pitch = {
+      title: clip(b.title, 100), tagline: clip(b.tagline, 200), plot: clip(b.plot, 4000),
+      who: clip(b.who, 80), career: clip(b.career, 160), motive: clip(b.motive, 200), hunk: clip(b.hunk, 200), flag: clip(b.flag, 200),
+      twist: (Array.isArray(b.twist) ? b.twist : []).slice(0, 3).map(t => ({ q: clip(t && t.q, 200), a: clip(t && t.a, 300) })).filter(t => t.a),
+      credit: clip(b.credit, 60), city: clip(b.city, 60)
+    };
+    if (!pitch.title || !pitch.plot || !pitch.credit) return json({ error: 'missing' }, 400);
+    const email = clip(b.email, 120);
+    if (email && !EMAIL_RE.test(email)) return json({ error: 'email' }, 400);
+    const ip = req.headers.get('cf-connecting-ip') || 'local';
+    if (!(await counter(env, 'hofip:' + (await sha(ip + ':' + today())), +env.HOF_IP_DAILY_LIMIT || 10))) return json({ error: 'limit' }, 429);
+    const r = await hofStub(env).fetch('https://do/submit', { method: 'POST', body: JSON.stringify({ pitch, email, newsletter: !!(b.newsletter && email) }) });
+    if (!r.ok) return json({ error: 'full' }, 503);
+    const { id } = await r.json();
+    ctx.waitUntil(notify(env, url0(req), id, pitch, email, !!(b.newsletter && email)));
+    return json({ ok: true });
+  }
+
+  if (p === '/api/hof/admin') {
+    const a = await adminOk(req, env);
+    if (a === 'not_set') return json({ error: 'not_set' }, 503);
+    if (a === 'limit') return json({ error: 'limit' }, 429);
+    if (a !== 'ok') return json({ error: 'password' }, 401);
+    const url = new URL(req.url);
+    if (req.method === 'GET') return hofStub(env).fetch('https://do/admin?status=' + encodeURIComponent(url.searchParams.get('status') || 'pending'));
+    if (req.method === 'POST') return hofStub(env).fetch('https://do/admin', { method: 'POST', body: await req.text() });
+  }
+  return json({ error: 'not_found' }, 404);
+}
+const url0 = req => new URL(req.url).origin;
+const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function notify(env, origin, id, pt, email, newsletter) {
+  if (!env.HOF_EMAIL) return;                                       // email alerts not set up yet
+  try {
+    const lines = [
+      `New Hall of Fame submission: ${pt.title}`, pt.tagline ? `"${pt.tagline}"` : '', '',
+      `Credit: ${pt.credit}${pt.city ? ' (' + pt.city + ')' : ''}`,
+      `Starring ${pt.who} · ${pt.career}`, `Coming home because: ${pt.motive}`, `Falling for: ${pt.hunk}`, '',
+      pt.plot, '', email ? `Contact: ${email}${newsletter ? ' (wants the Gooseletter)' : ''}` : 'No contact email given.', '',
+      `Review it: ${origin}/admin`
+    ].filter((l, i, a) => l !== '' || a[i - 1] !== '');
+    const msg = {
+      from: { email: env.HOF_FROM || 'hall-of-fame@blankforchristmas.com', name: 'Blank for Christmas' },
+      subject: `Hall of Fame: ${pt.title}`.slice(0, 120),
+      text: lines.join('\n'),
+      html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;max-width:560px">${lines.map(l => l ? `<p style="margin:0 0 8px">${escH(l).replace(/(https?:\/\/\S+)/, '<a href="$1">$1</a>')}</p>` : '').join('')}</div>`
+    };
+    if (env.HOF_NOTIFY_TO) msg.to = env.HOF_NOTIFY_TO;
+    if (email) msg.replyTo = email;
+    await env.HOF_EMAIL.send(msg);
+  } catch (e) { console.log('hof email failed', e && (e.code || e.message)); }
+}
+
+export class HallOfFame {
+  constructor(ctx, env) {
+    this.ctx = ctx; this.sql = ctx.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS subs(id TEXT PRIMARY KEY, created INTEGER, status TEXT, featured INTEGER DEFAULT 0, data TEXT, email TEXT, newsletter INTEGER DEFAULT 0)`);
+  }
+  rows(q, ...a) { return [...this.sql.exec(q, ...a)]; }
+  pub(r) { return { id: r.id, created: r.created, featured: !!r.featured, ...JSON.parse(r.data) }; }
+  async fetch(req) {
+    const url = new URL(req.url);
+    if (url.pathname === '/public') {
+      const list = this.rows(`SELECT * FROM subs WHERE status='approved' ORDER BY featured DESC, created DESC LIMIT 300`).map(r => this.pub(r));
+      return json({ list });
+    }
+    if (url.pathname === '/submit') {
+      const pending = this.rows(`SELECT COUNT(*) AS n FROM subs WHERE status='pending'`)[0].n;
+      if (pending >= 3000) return json({ error: 'full' }, 503);
+      const b = await req.json();
+      const id = crypto.randomUUID().slice(0, 12);
+      this.sql.exec(`INSERT INTO subs(id,created,status,featured,data,email,newsletter) VALUES(?,?,?,?,?,?,?)`, id, Date.now(), 'pending', 0, JSON.stringify(b.pitch), b.email || '', b.newsletter ? 1 : 0);
+      return json({ id });
+    }
+    if (url.pathname === '/admin' && req.method === 'GET') {
+      const st = url.searchParams.get('status');
+      const where = ['pending', 'approved', 'rejected'].includes(st) ? st : 'pending';
+      const list = this.rows(`SELECT * FROM subs WHERE status=? ORDER BY featured DESC, created DESC LIMIT 500`, where).map(r => ({ ...this.pub(r), status: r.status, email: r.email, newsletter: !!r.newsletter }));
+      const counts = {}; this.rows(`SELECT status, COUNT(*) AS n FROM subs GROUP BY status`).forEach(r => counts[r.status] = r.n);
+      const optins = this.rows(`SELECT email FROM subs WHERE newsletter=1 AND email<>''`).map(r => r.email);
+      return json({ list, counts, optins: [...new Set(optins)] });
+    }
+    if (url.pathname === '/admin' && req.method === 'POST') {
+      let b; try { b = await req.json(); } catch { return json({ error: 'bad_request' }, 400); }
+      const id = String(b.id || '');
+      const act = { approve: [`UPDATE subs SET status='approved' WHERE id=?`], reject: [`UPDATE subs SET status='rejected', featured=0 WHERE id=?`],
+        pending: [`UPDATE subs SET status='pending', featured=0 WHERE id=?`],
+        feature: [`UPDATE subs SET status='approved', featured=1 WHERE id=?`], unfeature: [`UPDATE subs SET featured=0 WHERE id=?`],
+        delete: [`DELETE FROM subs WHERE id=?`] }[b.action];
+      if (!act) return json({ error: 'bad_action' }, 400);
+      this.sql.exec(act[0], id);
+      return json({ ok: true });
+    }
+    return json({ error: 'not_found' }, 404);
+  }
 }
 
 // ---------------------------------------------------------------- rooms
