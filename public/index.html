@@ -2717,7 +2717,7 @@ A.tvGo=()=>{if(!S.game||S.game.phase!=='intro')return;A.advance({dataset:{to:'na
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML());const sh=$('#sheet');if(sh)sh.scrollTop=0;if(t)setTimeout(()=>A.hjump({dataset:{t}}),30);};
 A.hjumpToggle=el=>{const l=$('#hjumpList');if(!l)return;const open=l.hidden;l.hidden=!open;el.setAttribute('aria-expanded',String(open));};
 A.hjump=el=>{const sh=$('#sheet'),sec=document.getElementById('hs-'+el.dataset.t);const l=$('#hjumpList');if(l){l.hidden=true;const b=document.querySelector('.hjump-btn');if(b)b.setAttribute('aria-expanded','false');}
-  if(sh&&sec){const jb=document.querySelector('.hjump');const off=(jb?jb.offsetHeight:50)+14;const top=sec.getBoundingClientRect().top-sh.getBoundingClientRect().top+sh.scrollTop-off;sh.scrollTo({top,behavior:'smooth'});}};
+  if(sh&&sec){const jb=document.querySelector('.hjump');const sr=sh.getBoundingClientRect();const stuck=sr.top+(parseFloat(getComputedStyle(sh).paddingTop)||0)-2+(jb?jb.offsetHeight:50);const top=sec.getBoundingClientRect().top-stuck-10+sh.scrollTop;sh.scrollTo({top,behavior:'smooth'});}};
 
 /* events */
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;if(el.type==='checkbox'||el.type==='radio'){A[el.dataset.act]&&A[el.dataset.act](el,e);return;}e.preventDefault();const f=A[el.dataset.act];if(f)f(el,e);});
