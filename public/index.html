@@ -559,6 +559,11 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 @keyframes micpulse{0%,100%{transform:scale(.8);opacity:.7}50%{transform:scale(1.25);opacity:1}}
 .dict-hint{margin:6px 0 0}
 @media (prefers-reduced-motion:reduce){.micbtn.on .mic-ic i{animation:none}}
+.mode-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border:2px solid var(--ink,#1d1d1f);border-radius:14px;background:#fff;cursor:pointer;margin:0 0 6px}
+.mode-card .mc-ic{width:40px;height:40px;border-radius:10px;background:#fdf5db;display:grid;place-items:center;flex:none}.mode-card .mc-ic svg{width:22px;height:22px}
+.mode-card .mc-t{flex:1;display:flex;flex-direction:column}.mode-card .mc-l{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#6b6e73}.mode-card b{font-size:16.5px}
+.mode-card .mc-ch{font-weight:600;font-size:14px;color:var(--cran,#a3162f);text-decoration:underline;text-underline-offset:3px}
+.props-need{margin-top:14px;padding:10px 12px;border-radius:10px;background:#fdf5db;border:1.5px solid #e2b93a;font-size:14.5px}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -996,10 +1001,7 @@ function render(){
   try{
     switch(S.view){
       case 'home':h=vHome();break;
-      case 'version':h=vVersion();break;
       case 'ai':h=S.caps.sample?vAI():vHome();break;
-      case 'editor':h=vEditor();break;
-      case 'rounds':h=vRounds();break;
       case 'setup':h=vSetup();break;
       case 'join':h=vJoin();break;
       case 'import':h=vImport();break;
@@ -1072,16 +1074,6 @@ function vHome(){
   <footer class="hcredit"><div>An original game from the mind of</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290">${mfLinks()}${mfSupport()}</footer>
   </div>`;
 }
-function vVersion(){
-  const ai=!!S.caps.sample;
-  return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>
-  <div class="paper"><div class="eyebrow">Step 1 of 3</div><h2>Pick your version</h2><p class="muted">You can edit everything later.</p>
-    <button class="choice" data-act="pickVersion" data-v="marco"><b>Marco's version</b>The original party game, cleaned up for any crowd: real dice, a card race, the Christmas village and beer pong, with digital backups for each.</button>
-    <button class="choice" data-act="pickVersion" data-v="custom"><b>Make your own</b>Start from Marco's version and rewrite every name, job, crisis and hunk with your group's inside jokes.</button>
-    ${ai?`<button class="choice" data-act="pickVersion" data-v="ai"><b>Suggest options for me</b>Tell Claude about your group, your inside jokes and the props you have. It writes a custom game, picks how each round gets randomized, and you tweak from there.</button>`:''}
-    <p class="small center"><button class="link" data-act="howto">Here's how it works</button> · <button class="link" data-act="go" data-to="import">Load a saved setup</button></p>
-  </div>`;
-}
 function vAI(){
   const f=S.ui.ai||(S.ui.ai={players:'',jokes:'',setting:'',spice:'cheeky',props:{dice:true,cards:true,cups:true,village:false,hat:false}});
   const props=[['dice','Dice'],['cards','Deck of cards'],['cups','Solo cups + ping pong balls'],['village','Christmas village / decorations'],['hat','A hat or bowl']];
@@ -1103,70 +1095,6 @@ function vAI(){
    <p class="small muted">No props? Uncheck everything and every round goes digital.</p>
    <div class="row" style="margin-top:16px"><button class="btn primary" data-act="aiGenerate" ${S.busy?'disabled':''}>${S.busy?'<span class="spin-ld"></span>Writing your screenplay…':'Write our game'}</button></div>
    ${S.ui.aiErr?`<p class="small" style="color:var(--cran)">${esc(S.ui.aiErr)}</p>`:''}
-  </div>`;
-}
-function vEditor(){
-  const d=S.draft,c=d.content;
-  const op=id=>(S.ui.open||(S.ui.open={intro:true}))[id]?'open':'';
-  const ta=(key,label,hint)=>`<details class="sec" data-sec="${key}" ${op(key)}><summary>${label} <span class="tag" style="margin-left:8px">${c[key].length}</span></summary><div class="body"><p class="small muted">${hint}</p><div style="margin:-4px 0 8px">${sugBtn(`data-kind="list" data-list="${key}"`,'Add a suggestion')}</div><textarea class="t" rows="8" data-k="list.${key}" data-list="${key}">${esc(c[key].join('\n'))}</textarea></div></details>`;
-  return `<div class="on-dark" style="padding-top:10px">${backBtn('version')}</div>
-  <div class="paper"><div class="eyebrow">Step 2 of 3 · ${d.version==='ai'&&S.caps.sample?'Claude\'s draft':'Your version'}</div><h2>Write your holiday movie universe</h2>
-  <p class="muted small">${d.version==='ai'?'Claude drafted this from what you told it. Keep what lands, rewrite what doesn\'t.':'Swap in your own names, jobs, crises and hunks. Inside jokes encouraged.'} Order doesn't matter.</p>
-  <details class="sec" data-sec="intro" ${op('intro')}><summary>Opening narration</summary><div class="body">
-    <label class="f">Game title</label><input class="t" data-k="title" data-bind="draft.content.title" value="${esc(c.title)}">
-    <label class="f">Welcome speech</label><textarea class="t" rows="6" data-k="intro" data-bind="draft.content.intro">${esc(c.intro)}</textarea>
-    <label class="f">Opening cue for the host <span class="muted small">(e.g. "Katie, please play a wordless carol")</span>${sugBtn('data-kind="text" data-bank="cue" data-path="draft.content.openingCue"')}</label><input class="t" data-k="ocue" data-bind="draft.content.openingCue" value="${esc(c.openingCue||'')}">
-  </div></details>
-  ${ta('firstNames','First names','One per line. With real dice, 12 is the sweet spot (two dice roll 2–12).')}
-  ${ta('lastNames','Last names','One per line.')}
-  ${ta('careers','Careers','One per line. With the card race, careers map to A, K, Q, J, 10, 9, 8, 7… so have at least as many as players.')}
-  <details class="sec" data-sec="motives" ${op('motives')}><summary>Christmas motives <span class="tag" style="margin-left:8px">${c.motives.length}</span></summary><div class="body">
-    <p class="small muted">The place is what players see before choosing; the title and story are the reveal.</p>
-    ${c.motives.map((m,i)=>`<div class="item"><div class="row"><b class="small">#${i+1}</b>${sugBtn(`data-kind="item" data-list="motives" data-i="${i}"`)}<span class="spacer"></span><button class="link small" data-act="delItem" data-list="motives" data-i="${i}">Remove</button></div>
-      <input class="t" data-k="m${i}p" data-bind="draft.content.motives.${i}.place" placeholder="Place (e.g. The Corner Pub)" value="${esc(m.place)}" style="margin:6px 0">
-      <input class="t" data-k="m${i}t" data-bind="draft.content.motives.${i}.title" placeholder="Title" value="${esc(m.title)}" style="margin:6px 0">
-      <textarea class="t" rows="3" data-k="m${i}x" data-bind="draft.content.motives.${i}.text" placeholder="The dramatic setup">${esc(m.text)}</textarea></div>`).join('')}
-    <button class="btn small" data-act="addItem" data-list="motives">+ Add a motive</button>
-  </div></details>
-  <details class="sec" data-sec="hunks" ${op('hunks')}><summary>Holiday hunks <span class="tag" style="margin-left:8px">${c.hunks.length}</span></summary><div class="body">
-    ${c.hunks.map((h,i)=>`<div class="item"><div class="row"><b class="small">#${i+1}</b>${sugBtn(`data-kind="item" data-list="hunks" data-i="${i}"`)}<span class="spacer"></span><button class="link small" data-act="delItem" data-list="hunks" data-i="${i}">Remove</button></div>
-      ${[['title','Who he is'],['backstory','Backstory'],['vibe','Vibe'],['line','Signature line'],['redflag','Red flag'],['verdict','Why he\'s perfect (or bad)']].map(([f,l])=>`<input class="t" data-k="h${i}${f}" data-bind="draft.content.hunks.${i}.${f}" placeholder="${l}" value="${esc(h[f]||'')}" style="margin:5px 0">`).join('')}</div>`).join('')}
-    <button class="btn small" data-act="addItem" data-list="hunks">+ Add a hunk</button>
-  </div></details>
-  <details class="sec" data-sec="tq" ${op('tq')}><summary>Twist questions</summary><div class="body"><p class="small muted">Everyone answers these secretly; the answers become someone else's plot twist. Blank items get a suggestion; filled ones get swapped.</p>
-    ${c.twistQuestions.map((q,i)=>`<div class="row" style="flex-wrap:nowrap;margin:5px 0"><input class="t" style="flex:1" data-k="tq${i}" data-bind="draft.content.twistQuestions.${i}" value="${esc(q)}">${sugBtn(`data-kind="text" data-bank="tq" data-path="draft.content.twistQuestions.${i}"`,'Suggest')}</div>`).join('')}
-  </div></details>
-  <div class="row" style="margin-top:16px"><button class="btn primary" data-act="go" data-to="rounds">Next: how each round is randomized →</button></div>
-  <p class="small center"><button class="link" data-act="exportSetup">Copy this setup to save or share</button></p>
-  </div>`;
-}
-function vRounds(){
-  const d=S.draft;const online=!!S.caps.db;
-  const roundBox=k=>{const r=ROUNDS[k];const cur=d.mechanics[k];const p=PRESETS[cur];
-    return `<div class="item" style="background:#fff"><div class="eyebrow">Round ${r.n}</div><h3>${esc(r.title)}</h3>
-      <select class="t" data-act-change="setMech" data-r="${k}">${ROUND_PRESETS[k].map(id=>`<option value="${id}" ${id===cur?'selected':''}>${PRESETS[id].label}${PRESETS[id].prop&&id!=='custom'?' · needs '+PRESETS[id].prop.toLowerCase():''}</option>`).join('')}</select>
-      ${cur==='custom'?`<label class="f">Your challenge${sugBtn(`data-kind="text" data-bank="challenge" data-path="draft.custom.${k}"`)}</label><textarea class="t" rows="3" data-k="cus${k}" data-bind="draft.custom.${k}" placeholder="e.g. Look under the couch cushions for a numbered ornament. Tap the number you found.">${esc(d.custom[k]||'')}</textarea>`:`<p class="small muted" style="margin:8px 0 0">${esc(p.instr)}</p>`}
-      <label class="f">Host cue <span class="muted small">(optional stage direction or inside joke)</span>${sugBtn(`data-kind="text" data-bank="cue" data-path="draft.cues.${k}"`)}</label>
-      <input class="t" data-k="cue${k}" data-bind="draft.cues.${k}" placeholder="e.g. Marco narrates in his movie-trailer voice" value="${esc(d.cues[k]||'')}"></div>`;};
-  return `<div class="on-dark" style="padding-top:10px">${backBtn(d.version==='marco'?'version':'editor')}</div>
-  <div class="paper"><div class="eyebrow">Step ${d.version==='marco'?'2':'3'} of 3</div><h2>How each round gets randomized</h2>
-   <p class="muted small">Use the props you have, or go digital. Mix and match freely.</p>
-   <div class="row" style="margin:8px 0"><button class="btn small" data-act="allMech" data-m="props">Use props everywhere</button><button class="btn small" data-act="allMech" data-m="digital">All digital</button></div>
-   ${ROUND_KEYS.map(roundBox).join('')}
-   <div class="item" style="background:#fff"><div class="eyebrow">Round 5 + finale</div><h3>Twist, pitches & voting</h3>
-     <p class="small muted">Secret slips are typed on phones, drawn from a digital hat, then everyone pitches.</p>
-     <div class="row"><label class="f" style="margin:0">Pitch prep</label><select class="t" style="width:auto" data-bind-num="draft.settings.prepMin">${[3,5,7,10].map(n=>`<option ${d.settings.prepMin===n?'selected':''} value="${n}">${n} min</option>`).join('')}</select>
-     <label class="f" style="margin:0">Each pitch</label><select class="t" style="width:auto" data-bind-num="draft.settings.pitchMin">${[1,2,3,4].map(n=>`<option ${d.settings.pitchMin===n?'selected':''} value="${n}">${n} min</option>`).join('')}</select></div>
-     <label class="f">Host cue for the twist <span class="muted small">(optional)</span>${sugBtn('data-kind="text" data-bank="cue" data-path="draft.cues.twist"')}</label><input class="t" data-k="cuetwist" data-bind="draft.cues.twist" value="${esc(d.cues.twist||'')}">
-   </div>
-   <h3 style="margin-top:18px">How do you want to run it?</h3>
-   <button class="choice ${d.playMode==='host'?'sel':''}" data-act="playMode" data-m="host"><b>Host-led party</b>You run the room with a printed kit: a read-aloud script, name and career charts, cut-out motive and hunk cards, twist slips, name tags, worksheets and ballots. Players just need a pen.</button>
-   <button class="choice ${d.playMode!=='host'?'sel':''}" data-act="playMode" data-m="${online?'online':'local'}"><b>Play-along on phones</b>The app runs the game: rolls, picks, reveals, secret slips and votes all happen on screen.</button>
-   ${d.playMode==='host'?`<div class="item" style="background:#fff"><label class="f" style="margin-top:0">How many players?</label><input class="t" type="number" min="2" max="30" style="width:110px" data-bind-num="draft.settings.kitPlayers" value="${d.settings.kitPlayers||8}"><p class="small muted" style="margin:8px 0 0">Sets how many twist slips, name tags, worksheets and ballots get printed.</p></div>
-   <div class="row" style="margin-top:12px"><button class="btn primary" data-act="downloadKit" ${S.ui.kitBusy?'disabled':''}>${S.ui.kitBusy?'<span class="spin-ld"></span>Printing the kit…':'Download the host kit (PDF)'}</button></div>
-   <p class="small muted" style="margin-top:12px">Want timers, reveals and a big-screen view while you host? <button class="link" data-act="createGame">Open the companion app</button> on your phone or laptop too. It's optional.</p>`
-   :`${online?`<div class="row" style="margin-top:4px"><label class="small" style="display:flex;gap:6px;align-items:center"><input type="radio" name="pm" data-act="playMode" data-m="online" ${d.playMode==='online'?'checked':''}> Each person on their own phone</label><label class="small" style="display:flex;gap:6px;align-items:center"><input type="radio" name="pm" data-act="playMode" data-m="local" ${d.playMode==='local'?'checked':''}> Pass one phone around</label></div>${d.playMode==='online'?'<p class="small muted">'+(S.web?'Friends join on their own phones with the game code. You can also add players to your own device.':'Friends need to be signed in to Claude and invited to this page as Editors. You can also add players to your own device.')+'</p>':''}`:'<p class="small muted">Everyone plays on this device, passed around for secret slips and votes.</p>'}
-   <div class="row" style="margin-top:12px"><button class="btn primary" data-act="createGame" ${S.busy?'disabled':''}>Open the lobby</button><button class="link small" data-act="downloadKit">or download the printable kit</button></div>`}
   </div>`;
 }
 function vJoin(){
@@ -1234,7 +1162,7 @@ function vLobby(){
    ${host||!me?`<div class="row" style="margin-top:12px"><input class="t" style="flex:1" data-k="addname" data-bind="ui.addName" placeholder="${host?'Add a player on this device':'Your name'}" value="${esc(S.ui.addName||'')}"><button class="btn primary small" data-act="addPlayer">Add</button></div>`:''}
    ${!host?`<p class="small muted" style="margin-top:12px">${me?'You\'re in! Waiting for the host to start.':''}</p>`:''}
   </div>
-  ${host&&S.caps.downloads?`<p class="fine"><button class="link" data-act="downloadKit">Download the printable kit</button></p>`:''}
+  ${host&&S.caps.downloads&&g.playMode==='host'?`<p class="fine"><button class="link" data-act="downloadKit">Download the printable kit</button></p>`:''}
   <p class="center" style="margin:10px 0"><button class="btn small" data-act="howto" style="background:rgba(20,12,10,.6);color:#fff;border-color:rgba(255,255,255,.5)">Here's how it works</button></p>
   ${host?`<p class="fine">Tip: tap the TV button on a laptop hooked up to the TV for the big-screen view.</p>`:''}`;
 }
@@ -1573,13 +1501,13 @@ function quickMenuHTML(){const online=!!S.caps.db;const kb=S.ui.kitBusy;
    ${opt('quickOnline','Multiplayer','Everyone on their own phone',online?'Start it on your phone and friends join with a 4-letter code on theirs. Secret twists stay secret. Got a TV or laptop? Put it on the big screen too.':'Not available in this view.',!online)}
    ${opt('qmPrint','Multiplayer',kb?'Printing your kit…':"Print Marco's version",'Downloads a printable PDF host kit: the host script, name tags, secret slips and ballots. Play with real dice and props, no screens needed.',kb)}
   </div>`;}
-A.quickMenu=()=>{S.ui.qmSolo=false;modal(quickMenuHTML());};
-A.qmBack=()=>{S.ui.qmSolo=false;$('#sheet').innerHTML=quickMenuHTML();};
+A.quickMenu=()=>{S.ui.qmSolo=false;S.ui.soloCustom=false;modal(quickMenuHTML());};
+A.qmBack=()=>{S.ui.qmSolo=false;if(S.ui.soloCustom){S.ui.soloCustom=false;closeModal();return;}$('#sheet').innerHTML=quickMenuHTML();};
 A.qmSolo=()=>{S.ui.qmSolo=true;$('#sheet').innerHTML=quickMenuHTML();setTimeout(()=>{const i=$('#soloName');if(i)i.focus();},50);};
 A.qmPrint=async()=>{closeModal();await A.printPlay();};
 A.quickOnline=()=>{if(S.busy)return;if(!S.caps.db){toast('Online games need this page opened from the website or Claude.');return;}closeModal();S.draft=newDraft('marco');S.draft.quick=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='online';A.createGame();};
 A.startSolo=async()=>{if(S.busy)return;S.ui.tvFrame=0;const name=(($('#soloName')||{}).value||'').trim()||'You';closeModal();S.ui.qmSolo=false;
-  S.draft=newDraft('marco');S.draft.quick=true;S.draft.solo=true;S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';
+  if(S.ui.soloCustom&&S.draft){S.ui.soloCustom=false;S.draft.solo=true;S.draft.quick=false;}else{S.draft=newDraft('marco');S.draft.quick=true;S.draft.solo=true;}S.draft.mechanics={...DIGITAL_MECH};S.draft.playMode='local';
   await A.createGame();if(!S.store||!S.game)return;
   await S.store.setPlayer('p'+rid(8),{name,controller:S.myUid,joinedAt:Date.now(),color:COLORS[0]});
   await S.store.updateGame({phase:'intro'});window.scrollTo(0,0);};
@@ -1821,17 +1749,10 @@ async function winHunk(pid,key){const tk=takenMap(key,pid);const pool=itemsFor(k
   const t=S.ui.scratch&&S.ui.scratch[pid];const pick=t&&pool.includes(t.win)?t.win:pool[Math.floor(Math.random()*pool.length)];if(S.ui.scratch)delete S.ui.scratch[pid];await commit(key,pid,pick);}
 A.scratchAll=async el=>{const pid=el.dataset.id;const t=ticketFor(pid);const tk=document.querySelector(`.sc-ticket[data-id="${pid}"]`);if(!tk)return;
   for(let i=0;i<8&&!t.won;i++){if(t.cleared[i])continue;revealCell(pid,tk.dataset.key,i,tk.querySelector(`.sc-cell[data-i="${i}"]`));await sleep(280);}};
-A.pickVersion=el=>{const v=el.dataset.v;
-  if(v==='marco'){S.draft=newDraft('marco');S.view='rounds';}
-  else if(v==='custom'){S.draft=newDraft('custom');S.view='editor';}
-  else if(S.caps.sample){S.view='ai';}
-  else{S.draft=newDraft('custom');S.view='editor';}
-  render();window.scrollTo(0,0);};
+
 A.aiProp=el=>{S.ui.ai.props[el.dataset.p]=el.checked;};
 A.addItem=el=>{const l=el.dataset.list;S.draft.content[l].push(l==='motives'?{place:'',title:'',text:''}:{title:'',backstory:'',vibe:'',line:'',redflag:'',verdict:''});render();};
 A.delItem=el=>{S.draft.content[el.dataset.list].splice(+el.dataset.i,1);render();};
-A.allMech=el=>{S.draft.mechanics={...(el.dataset.m==='props'?PROPS_MECH:DIGITAL_MECH)};render();};
-A.playMode=el=>{S.draft.playMode=el.dataset.m;render();};
 A.exportSetup=async()=>{const d=S.draft;const s=JSON.stringify({content:d.content,mechanics:d.mechanics,custom:d.custom,cues:d.cues,settings:d.settings});saveSetup(d);try{await navigator.clipboard.writeText(s);toast('Setup copied. It\'s also saved on this device.');}catch(e){modal(`<h3>Copy this setup</h3><textarea class="t" rows="10" readonly>${esc(s)}</textarea><div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn primary" data-act="closeModal">Done</button></div>`);}};
 function saveSetup(d){const arr=(ls('hmh_setups')||[]).filter(x=>x.content.title!==d.content.title);arr.unshift({content:d.content,mechanics:d.mechanics,custom:d.custom,cues:d.cues,settings:d.settings,at:Date.now()});ls('hmh_setups',arr.slice(0,8));}
 function normalizeSetup(o){const d=newDraft('custom');const c=o.content||o;
@@ -1900,7 +1821,7 @@ A.createGame=async()=>{
   if(d.version!=='marco')saveSetup(d);
   const online=d.playMode==='online'&&S.caps.db;if(d.playMode==='host')d.settings.kitPlayers=d.settings.kitPlayers||8;
   const g={code:code4(),version:d.version,content:c,mechanics:d.mechanics,custom:d.custom,cues:d.cues,settings:d.settings,phase:'lobby',hostId:null,createdAt:Date.now(),
-    prep:{endsAt:null,left:d.settings.prepMin*60000},pitch:{endsAt:null,left:d.settings.pitchMin*60000},twists:null,pitchOrder:[],pitchIdx:0,solo:!!d.solo};
+    prep:{endsAt:null,left:d.settings.prepMin*60000},pitch:{endsAt:null,left:d.settings.pitchMin*60000},twists:null,pitchOrder:[],pitchIdx:0,solo:!!d.solo,playMode:d.solo?'solo':d.playMode};
   S.busy=true;render();
   try{
     if(online){S.myUid=await myUid();g.hostId=S.myUid;openStore(new DbStore(S.caps.db,g.code));await S.store.createGame(g);ls('hmh_session',{mode:'online',code:g.code});}
@@ -2376,32 +2297,67 @@ const SETUP_TOTAL=2+SETUP_ROUNDS.length*2;
 function sameList(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function promptModeFor(content,k){const r=SETUP_ROUNDS.find(x=>x.k===k);return r.lists.every(l=>sameList(content[l],MARCO[l]))?'marco':'custom';}
 function introChanged(d){const c=d.content;return c.title!==MARCO.title||c.intro!==MARCO.intro||(c.openingCue||'')!==MARCO.openingCue;}
-function randChanged(d,k){return (d.mechanics[k]||PROPS_MECH[k])!==PROPS_MECH[k]||!!(d.cues[k]||'').trim();}
+function randChanged(d,k){const def=modeDefaults(d.playMode)[k];return (d.mechanics[k]||def)!==def||!!(d.cues[k]||'').trim();}
 function promptChanged(d,k){return (d.prompts||{})[k]&&d.prompts[k]!=='marco';}
 function setupChangedCount(d){let n=0;if(d.playMode!=='host')n++;if(d.settings.prepMin!==5||d.settings.pitchMin!==2)n++;SETUP_ROUNDS.forEach(r=>{if(randChanged(d,r.k))n++;if(promptChanged(d,r.k))n++;});return n;}
 function promptCount(d,k){const c=d.content;return {name:`${c.firstNames.length} first · ${c.lastNames.length} last names`,career:`${c.careers.length} careers`,motive:`${c.motives.length} motives`,hunk:`${c.hunks.length} hunks`,twist:`${c.twistQuestions.length} questions`}[k];}
 const PMODE={marco:["gift","Marco's set"],custom:["pencil","Your own"],ai:["bulb","Suggested for you"]};
 function stile(n,p,r,label,value,meta,changed){
   return `<button class="stile ${changed?'changed':''}" data-act="pop" data-p="${p}" data-r="${r||''}"><span class="st-top"><span class="st-n">${n}</span><span class="st-lab">${label}</span><span class="st-badge ${changed?'':'def'}">${changed?'Changed':'Default'}</span></span><span class="st-val">${value}</span>${meta?`<span class="st-meta">${meta}</span>`:''}</button>`;}
-function vSetup(){
-  const d=S.draft;const ch=setupChangedCount(d);
-  const play={host:[ic('mic','inl')+'Host-led party','Printed kit + props'],local:[ic('phone','inl')+'One device, passed around','No accounts needed'],online:[ic('people','inl')+'Everyone on their phones',(S.web?'Friends join with a code':'Friends need Claude + an invite')]}[d.playMode]||[ic('mic','inl')+'Host-led party',''];
-  let n=0;const T=(...a)=>stile(++n,...a);
-  const basics=`<div class="sgrid one">${T('play','','How you\'re playing',play[0],play[1],d.playMode!=='host')}</div>`;
-  const rounds=SETUP_ROUNDS.map((r,i)=>{
-    let rand;{const p=PRESETS[d.mechanics[r.k]||PROPS_MECH[r.k]]||PRESETS.wheel;const custom=d.mechanics[r.k]==='custom';rand=T('rand',r.k,'Randomize',`${ic(p.icon,'inl')}${custom?'Your own instructions':esc(p.label)}`,[custom?'':(p.prop?'Needs: '+esc(p.prop):'No props needed'),(d.cues[r.k]||'').trim()?'Host cue added':''].filter(Boolean).join(' · '),randChanged(d,r.k));}
-    const pm=PMODE[(d.prompts||{})[r.k]||'marco'];const prm=T('prompt',r.k,'Prompts',`${ic(pm[0],'inl')}${pm[1]}`,promptCount(d,r.k),promptChanged(d,r.k));
-    return `<div class="sround"><div class="sr-title"><span class="sr-ch">Round ${i+1}</span>${r.title}</div><div class="sgrid two">${rand}${prm}</div></div>`;}).join('');
-  const finale=`<div class="sgrid one">${T('timers','','Pitch prep',`${d.settings.prepMin} min to write · ${d.settings.pitchMin} min per pitch`,'The writers\' room, then everyone pitches',d.settings.prepMin!==5||d.settings.pitchMin!==2)}</div>`;
+
+/* ------------------------------------------------------------------ setup: modes */
+const PLAY_MODES={
+ solo:{icon:'clapper',label:'Solo',sub:'Just you. Roll a heroine, draw a twist, pitch the studio.'},
+ local:{icon:'phone',label:'Pass one device around',sub:'One phone or laptop runs the game. No accounts. Great for a couch of 3 to 8.'},
+ online:{icon:'people',label:'Everyone on their own phone',sub:'Friends join with a 4-letter code. Secret twists stay secret.'},
+ host:{icon:'mic',label:'Print it, no screens',sub:'A printable host kit: script, charts, cards, slips and ballots. Bring real dice and props.'}};
+const PRINT_OK=['realDice','cardRace','pullCard','drawSlip','realVillage','beerPong','paperHat','custom'];
+const PRINT_MECH={...PROPS_MECH,twist:'paperHat'};
+function modeDefaults(m){return m==='host'?PRINT_MECH:DIGITAL_MECH;}
+function mechOkFor(m,id){if(m==='host')return PRINT_OK.includes(id);if(m==='solo')return !PRESETS[id]||!PRESETS[id].prop;return true;}
+function roundOptions(m,k){return ROUND_PRESETS[k].filter(id=>mechOkFor(m,id));}
+function applyMode(d,m){const old=d.playMode;d.playMode=m;d.modeChosen=true;let swapped=0;
+  [...ROUND_KEYS,'twist'].forEach(k=>{const cur=d.mechanics[k];
+    const untouched=!old||cur===modeDefaults(old)[k];
+    if(untouched||!mechOkFor(m,cur)){const nx=modeDefaults(m)[k];if(nx!==cur){d.mechanics[k]=nx;if(!untouched)swapped++;}}});
+  if(m==='host')d.settings.kitPlayers=d.settings.kitPlayers||8;
+  return swapped;}
+function vModePick(){const d=S.draft;const online=!!S.caps.db;
   return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>
-  <div class="paper"><div class="eyebrow">Customize your game</div><h2>${SETUP_TOTAL} choices. All optional.</h2>
-   <p class="muted small" style="margin:4px 0 10px">Everything starts on Marco's defaults, so you can start right now. Tap any tile to change it.</p>
-   <div class="smeter"><div class="bar"><i style="width:${Math.round(ch/SETUP_TOTAL*100)}%"></i></div><span><b>${ch}</b> of ${SETUP_TOTAL} customized</span></div>
-   <div class="slegend"><i></i>Red outline = changed from Marco's default</div>
-   <div class="sg-h">First</div>${basics}
-   <div class="sg-h">The rounds <span>how it's randomized · what's in it</span></div>${rounds}
-   <div class="sg-h">The finale</div>${finale}
-   <div class="row" style="margin-top:18px"><button class="btn primary" data-act="createGame" ${S.busy?'disabled':''}>Open the lobby</button>${d.playMode==='host'&&S.caps.downloads?`<button class="btn" data-act="downloadKit" ${S.ui.kitBusy?'disabled':''}>${S.ui.kitBusy?'<span class="spin-ld"></span>Printing…':'Host kit (PDF)'}</button>`:''}</div>
+  <div class="paper"><div class="eyebrow">Make it your own</div><h2>How are you playing?</h2><p class="muted small" style="margin:4px 0 12px">This decides everything else, so it comes first. You can change it later.</p>
+  <div class="qm-list">${Object.entries(PLAY_MODES).map(([k,v])=>{const dis=k==='online'&&!online;return `<button class="choice qm ${d.modeChosen&&d.playMode===k?'sel':''}" data-act="pickMode" data-m="${k}" ${dis?'disabled':''}><b>${ic(v.icon,'inl')}${v.label}</b><span class="small">${dis?'Not available in this view.':v.sub}</span></button>`;}).join('')}</div></div>`;}
+A.pickMode=el=>{const d=S.draft;const m=el.dataset.m;const had=d.modeChosen;const n=applyMode(d,m);S.ui.modePick=false;S.view='setup';render();window.scrollTo(0,0);
+  if(had&&n)toast(m==='host'?`Swapped ${n} round${n>1?'s':''} to paper versions.`:`Swapped ${n} round${n>1?'s':''} to versions that work here.`,3600);};
+A.changeMode=()=>{S.ui.modePick=true;render();window.scrollTo(0,0);};
+function propsNeeded(d){return [...new Set([...ROUND_KEYS,'twist'].map(k=>{const id=d.mechanics[k];return id!=='custom'&&PRESETS[id]&&PRESETS[id].prop;}).filter(Boolean))];}
+A.setupSolo=()=>{S.ui.qmSolo=true;S.ui.soloCustom=true;modal(quickMenuHTML());setTimeout(()=>{const i=$('#soloName');if(i)i.focus();},50);};
+function vSetup(){
+  const d=S.draft;if(!d.modeChosen||S.ui.modePick)return vModePick();
+  const m=d.playMode;const pm=PLAY_MODES[m];
+  let n=0;const T=(...a)=>stile(++n,...a);
+  const head=`<button class="mode-card" data-act="changeMode"><span class="mc-ic">${ic(pm.icon)}</span><span class="mc-t"><span class="mc-l">Playing</span><b>${pm.label}</b></span><span class="mc-ch">Change</span></button>`;
+  const rounds=SETUP_ROUNDS.map((r,i)=>{
+    let rand='';
+    if(m!=='solo'){const def=modeDefaults(m)[r.k];const p=PRESETS[d.mechanics[r.k]||def]||PRESETS.wheel;const custom=d.mechanics[r.k]==='custom';
+      rand=T('rand',r.k,m==='host'?'How it’s played':'Randomize',`${ic(p.icon,'inl')}${custom?'Your own instructions':esc(p.label)}`,[custom?'':(p.prop?'Needs: '+esc(p.prop):'No props needed'),(d.cues[r.k]||'').trim()?'Host cue added':''].filter(Boolean).join(' · '),randChanged(d,r.k));}
+    const pmd=PMODE[(d.prompts||{})[r.k]||'marco'];const prm=T('prompt',r.k,'Prompts',`${ic(pmd[0],'inl')}${pmd[1]}`,promptCount(d,r.k),promptChanged(d,r.k));
+    return `<div class="sround"><div class="sr-title"><span class="sr-ch">Round ${i+1}</span>${r.title}</div><div class="sgrid ${m==='solo'?'one':'two'}">${rand}${prm}</div></div>`;}).join('');
+  const extras=[];
+  if(m==='host')extras.push(T('players','','Players',`${d.settings.kitPlayers||8} players`,'How many slips, name tags and ballots print',(d.settings.kitPlayers||8)!==8));
+  if(m!=='solo')extras.push(T('timers','','Pitch timing',`${d.settings.prepMin} min to write · ${d.settings.pitchMin} min per pitch`,m==='host'?'Printed in the host script':'The writers’ room, then everyone pitches',d.settings.prepMin!==5||d.settings.pitchMin!==2));
+  const needs=m==='local'||m==='online'?propsNeeded(d):[];
+  const go=m==='host'?`<button class="btn primary" data-act="downloadKit" ${S.ui.kitBusy?'disabled':''}>${S.ui.kitBusy?'<span class="spin-ld"></span>Printing the kit…':'Download the host kit'}</button>`
+    :m==='solo'?`<button class="btn primary" data-act="setupSolo" ${S.busy?'disabled':''}>Action!</button>`
+    :`<button class="btn primary" data-act="createGame" ${S.busy?'disabled':''}>Open the casting call</button>`;
+  return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>
+  <div class="paper"><div class="eyebrow">Make it your own</div><h2>Customize your game</h2>
+   <p class="muted small" style="margin:4px 0 12px">Everything starts on Marco's version, so you can start right now. Tap anything to change it. Changed tiles get a red outline.</p>
+   ${head}
+   <div class="sg-h">The rounds <span>${m==='solo'?'what’s in each one':'how it’s played · what’s in it'}</span></div>${rounds}
+   ${extras.length?`<div class="sg-h">${m==='host'?'The kit':'The finale'}</div><div class="sgrid one">${extras.join('')}</div>`:''}
+   ${needs.length?`<div class="props-need"><b>Props you'll need:</b> ${needs.map(x=>esc(x)).join(', ')}</div>`:''}
+   <div class="row" style="margin-top:18px">${go}</div>
+   ${m==='host'?`<p class="small muted" style="margin-top:10px">Want timers and a big-screen view while you host? <button class="link" data-act="createGame">Open the companion app</button> too. It's optional.</p>`:''}
    <p class="small center" style="margin-top:14px">${S.caps.sample?`<button class="link" data-act="go" data-to="ai">Have Claude write the whole game</button> · `:''}<button class="link" data-act="go" data-to="import">Load a saved setup</button> · <button class="link" data-act="exportSetup">Copy this setup</button> · <button class="link" data-act="resetSetup">Reset to defaults</button></p>
   </div>`;
 }
@@ -2414,7 +2370,8 @@ function popHTML(){
     <button class="choice ${d.playMode==='local'?'sel':''}" data-act="setPlay" data-m="local"><b>One device, passed around</b><span class="small">The app runs everything on one phone or laptop. Pass it for secret slips and votes. No accounts.</span></button>
     <button class="choice ${d.playMode==='online'?'sel':''}" data-act="setPlay" data-m="online" ${online?'':'disabled'}><b>Everyone on their own phone</b><span class="small">Friends join with a code. ${S.web?'No accounts or apps needed.':'They must be signed in to Claude and invited to this page as Editors.'}${online?'':' (Only available when opened from your Claude account.)'}</span></button>
     ${d.playMode==='host'?`<label class="f">How many players? <span class="muted small">(sets how many slips, name tags and ballots print)</span></label><input class="t" type="number" min="2" max="30" style="width:110px" data-bind-num="draft.settings.kitPlayers" value="${d.settings.kitPlayers||8}">${S.caps.downloads?`<div style="margin-top:12px"><button class="btn small gold" data-act="downloadKit">Download the host kit</button></div>`:''}`:''}`+popFoot;}
-  if(pp.p==='timers')return popHead('The finale','Pitch prep')+`<label class="f">Writers' room (pitch prep)</label><select class="t" data-bind-num="draft.settings.prepMin">${[3,5,7,10].map(n=>`<option ${d.settings.prepMin===n?'selected':''} value="${n}">${n} minutes</option>`).join('')}</select>
+  if(pp.p==='players')return popHead('The kit','How many players?')+`<p class="small muted" style="margin:0 0 6px">Sets how many twist slips, name tags, worksheets and ballots print.</p><input class="t" type="number" min="2" max="30" style="width:110px" data-bind-num="draft.settings.kitPlayers" value="${d.settings.kitPlayers||8}">`+popFoot;
+  if(pp.p==='timers')return popHead(d.playMode==='host'?'The kit':'The finale','Pitch timing')+`<label class="f">Writers' room (pitch prep)</label><select class="t" data-bind-num="draft.settings.prepMin">${[3,5,7,10].map(n=>`<option ${d.settings.prepMin===n?'selected':''} value="${n}">${n} minutes</option>`).join('')}</select>
     <label class="f">Each pitch</label><select class="t" data-bind-num="draft.settings.pitchMin">${[1,2,3,4].map(n=>`<option ${d.settings.pitchMin===n?'selected':''} value="${n}">${n} minute${n>1?'s':''}</option>`).join('')}</select><p class="small muted">Tip: 90 seconds to 2 minutes keeps the energy up.</p>`+popFoot;
   if(pp.p==='intro'){const c=d.content;return popHead('The basics','The opening')+`<label class="f">Game title</label><input class="t" data-k="title" data-bind="draft.content.title" value="${esc(c.title)}">
     <label class="f">Welcome speech <span class="muted small">(read aloud at the start)</span></label><textarea class="t" rows="8" data-k="intro" data-bind="draft.content.intro">${esc(c.intro)}</textarea>
@@ -2423,8 +2380,8 @@ function popHTML(){
   const r=SETUP_ROUNDS.find(x=>x.k===pp.r);const idx=SETUP_ROUNDS.indexOf(r)+1;
   if(pp.p==='rand'){
     let body='';
-    {const cur=d.mechanics[r.k]||PROPS_MECH[r.k];
-      body=ROUND_PRESETS[r.k].map(id=>{const p=PRESETS[id];const cu=id==='custom';return `<button class="choice ${id===cur?'sel':''}" data-act="setMechPop" data-r="${r.k}" data-m="${id}"><b>${ic(p.icon,'inl')}${cu?'Write your own instructions':esc(p.label)}</b>${!cu&&p.prop?`<span class="tag">Needs: ${esc(p.prop)}</span>`:(!cu?'<span class="tag green">No props</span>':'')}<span class="small" style="display:block;margin-top:4px">${cu?'Invent your own challenge (look under a couch cushion, a dance-off…). Players finish it, then tap the number they won.':esc(p.instr)}</span></button>`;}).join('');
+    {const cur=d.mechanics[r.k]||modeDefaults(d.playMode)[r.k];
+      body=roundOptions(d.playMode,r.k).map(id=>{const p=PRESETS[id];const cu=id==='custom';return `<button class="choice ${id===cur?'sel':''}" data-act="setMechPop" data-r="${r.k}" data-m="${id}"><b>${ic(p.icon,'inl')}${cu?'Write your own instructions':esc(p.label)}</b>${!cu&&p.prop?`<span class="tag">Needs: ${esc(p.prop)}</span>`:(!cu?'<span class="tag green">No props</span>':'')}<span class="small" style="display:block;margin-top:4px">${cu?'Invent your own challenge (look under a couch cushion, a dance-off…). Players finish it, then tap the number they won.':esc(p.instr)}</span></button>`;}).join('');
       if(cur==='custom')body+=`<label class="f">Your instructions ${sugBtn(`data-kind="text" data-bank="challenge" data-path="draft.custom.${r.k}"`)}</label><textarea class="t" rows="3" data-k="cus${r.k}" data-bind="draft.custom.${r.k}" placeholder="e.g. Find a numbered ornament hidden somewhere in the room. Tap the number you found.">${esc(d.custom[r.k]||'')}</textarea>`;}
     body+=`<label class="f">Host cue <span class="muted small">(optional stage direction or inside joke)</span> ${sugBtn(`data-kind="text" data-bank="cue" data-path="draft.cues.${r.k}"`)}</label><input class="t" data-k="cue${r.k}" data-bind="draft.cues.${r.k}" placeholder="e.g. Marco narrates in his movie-trailer voice" value="${esc(d.cues[r.k]||'')}">`;
     return popHead(`Round ${idx} · ${r.title}`,r.k==='twist'?'How do slips get written and drawn?':'How do you want to randomize it?')+body+popFoot;}
@@ -2451,8 +2408,8 @@ function promptEditor(k){const c=S.draft.content;
   if(k==='hunk'){const cache=S.ui.hunkCache||(S.ui.hunkCache={});c.hunks.forEach(h=>{if(h.title)cache[h.title]=h;});
     return `<label class="f">Hunks <span class="muted small">${c.hunks.length}</span> ${sugBtn('data-kind="list" data-list="hunks"','Add a suggestion')}</label><p class="small muted" style="margin:0 0 6px">One hunk per line, e.g. "The Brooding Hockey Coach Who Cries at The Nutcracker." Marco's hunks keep their full backstories; yours can be just the one-liner.</p><textarea class="t" rows="9" data-k="hunklines" data-hunklines="1">${esc(c.hunks.map(h=>h.title).join('\n'))}</textarea>`;}
   return `<label class="f">Twist questions</label><p class="small muted" style="margin:0">Everyone answers these in secret; the answers become someone else's plot twist.</p>`+c.twistQuestions.map((q,i)=>`<div class="row" style="flex-wrap:nowrap;margin:5px 0"><input class="t" style="flex:1" data-k="tq${i}" data-bind="draft.content.twistQuestions.${i}" value="${esc(q)}">${sugBtn(`data-kind="text" data-bank="tq" data-path="draft.content.twistQuestions.${i}"`,'Suggest')}</div>`).join('');}
-A.goSetup=()=>{if(!S.draft||S.draft.quick)S.draft=newDraft('marco');S.view='setup';render();window.scrollTo(0,0);};
-A.resetSetup=()=>{S.draft=newDraft('marco');render();toast('Back to Marco\'s defaults');};
+A.goSetup=()=>{if(!S.draft||S.draft.quick)S.draft=newDraft('marco');S.ui.modePick=false;S.view='setup';render();window.scrollTo(0,0);};
+A.resetSetup=()=>{const m=S.draft&&S.draft.modeChosen?S.draft.playMode:null;S.draft=newDraft('marco');if(m)applyMode(S.draft,m);render();toast('Back to Marco\'s defaults');};
 A.pop=el=>{S.ui.pop={p:el.dataset.p,r:el.dataset.r};S.ui.aiErr=null;modal(popHTML(),true);};
 A.setPlay=el=>{S.draft.playMode=el.dataset.m;render();};
 A.setMechPop=el=>{S.draft.mechanics[el.dataset.r]=el.dataset.m;render();};
