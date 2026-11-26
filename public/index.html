@@ -551,13 +551,13 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .cb-star{color:#e9c46a;font-size:20px;position:relative;z-index:1;line-height:1}
 .cb-rail{position:absolute;left:18px;right:18px;top:134px;height:12px;border-radius:6px;background:linear-gradient(180deg,#d9a873,#a8733f 60%,#6e4422);box-shadow:0 4px 8px rgba(0,0,0,.25)}
 .cb-line{text-align:center;font-size:17px;margin:6px 0 0;color:#44474b}
-.dict-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
-.micbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 10px;border-radius:999px;border:2px solid #c9302a;background:#fbeef0;color:#8f1f1b;font:600 14.5px 'Hanken Grotesk',system-ui,sans-serif;cursor:pointer}
-.micbtn .mic-ic{width:26px;height:26px;border-radius:50%;background:#c9302a;color:#fff;display:grid;place-items:center}.micbtn .mic-ic svg{width:16px;height:16px}
+.dict-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+.micbtn{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:999px;border:1.5px solid #c9302a;background:#fbeef0;color:#8f1f1b;font:600 12.5px 'Hanken Grotesk',system-ui,sans-serif;cursor:pointer}
+.micbtn .mic-ic{width:20px;height:20px;border-radius:50%;background:#c9302a;color:#fff;display:grid;place-items:center}.micbtn .mic-ic svg{width:12px;height:12px}
 .micbtn.on{background:#c9302a;color:#fff}.micbtn.on .mic-ic{background:#fff}
-.micbtn.on .mic-ic i{width:10px;height:10px;border-radius:50%;background:#c9302a;animation:micpulse 1s ease-in-out infinite}
+.micbtn.on .mic-ic i{width:8px;height:8px;border-radius:50%;background:#c9302a;animation:micpulse 1s ease-in-out infinite}
 @keyframes micpulse{0%,100%{transform:scale(.8);opacity:.7}50%{transform:scale(1.25);opacity:1}}
-.dict-hint{margin:0 0 8px}
+.dict-hint{margin:6px 0 0}
 @media (prefers-reduced-motion:reduce){.micbtn.on .mic-ic i{animation:none}}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
@@ -2322,7 +2322,7 @@ function dictateMode(){const g=S.game;if(!g)return 'none';
   const shared=!g.solo&&!(S.store&&S.store.online)&&plist().length>1;   // one device passed around the room
   if(SR&&S.web&&!shared)return 'mic';return 'hint';}
 function dictateHTML(pid){const m=dictateMode();
-  if(m==='mic'){const on=DICT&&DICT.pid===pid;return `<div class="dict-row"><button type="button" class="micbtn ${on?'on':''}" data-act="dictate" data-pid="${pid}" aria-pressed="${on}"><span class="mic-ic" aria-hidden="true">${on?'<i></i>':`<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`}</span>${on?'Listening… tap to stop':'Say it out loud'}</button><span class="small muted">${on?'Pitch away. Your words land in the box below.':'Talk through your pitch and we’ll type it for you.'}</span></div>`;}
+  if(m==='mic'){const on=DICT&&DICT.pid===pid;return `<div class="dict-row"><button type="button" class="micbtn ${on?'on':''}" data-act="dictate" data-pid="${pid}" aria-pressed="${on}"><span class="mic-ic" aria-hidden="true">${on?'<i></i>':`<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`}</span>${on?'Listening… tap to stop':'Say it out loud'}</button><span class="small muted">${on?'Pitch away.':'We’ll type it for you.'}</span></div>`;}
   if(m==='hint')return `<p class="small muted dict-hint">Tip: tap the microphone on your keyboard to say your pitch instead of typing it.</p>`;
   return '';}
 function dictBox(pid){return document.querySelector(`[data-k="pp_${CSS.escape(pid)}"]`);}
@@ -2350,8 +2350,8 @@ function pitchForm(p){
   <input class="t ptitle-in" data-k="pt_${p.id}" data-pitch="${p.id}" data-f="title" maxlength="80" placeholder="e.g. ${esc(b.career)} for Christmas" value="${esc(d.title)}">
   <label class="f">Tagline ${sugBtn(`data-kind="pitchTagline" data-pid="${p.id}"`)}</label>
   <input class="t" data-k="pg_${p.id}" data-pitch="${p.id}" data-f="tagline" maxlength="140" placeholder="The one-liner on the poster" value="${esc(d.tagline)}">
-  <label class="f">Plot summary ${sugBtn(`data-kind="pitchPlot" data-pid="${p.id}"`,'Start me off')}</label>${dictateHTML(p.id)}
-  <textarea class="t" rows="7" data-k="pp_${p.id}" data-pitch="${p.id}" data-f="plot" placeholder="Act 1: arrives in town. Act 2: chaos. Act 3: a kiss in the snow, obviously.">${esc(d.plot)}</textarea>
+  <label class="f">Plot summary ${sugBtn(`data-kind="pitchPlot" data-pid="${p.id}"`,'Start me off')}</label>
+  <textarea class="t" rows="7" data-k="pp_${p.id}" data-pitch="${p.id}" data-f="plot" placeholder="Act 1: arrives in town. Act 2: chaos. Act 3: a kiss in the snow, obviously.">${esc(d.plot)}</textarea>${dictateHTML(p.id)}
   <p class="small muted" style="margin:6px 0 0">"Start me off" drafts a fill-in-the-blanks plot from your pieces. Replace anything in [brackets].</p>
   <div class="row" style="margin-top:12px"><button class="btn primary" data-act="savePitch" data-id="${p.id}">Save my pitch</button><span class="small muted">${p.pitch&&p.pitch.title?'✓ Saved':'Not saved yet'}</span></div></div>`;
 }
