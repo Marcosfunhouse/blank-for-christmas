@@ -372,7 +372,7 @@ body[data-wrap="photo"] #flakes{display:block}
 .hofpitch.feat{border:2px solid #e2b93a}
 .hof-ribbon{display:inline-block;background:#c9302a;color:#fff;font:600 11.5px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:6px;margin-bottom:10px}
 .hof-by{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#6e5a48;margin:0 0 8px}
-.adm-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.adm-tab{margin:0;padding:10px;text-align:center}.adm-tab.on{border-color:var(--cran);background:#fbeef0}
+.adm-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.adm-tab{margin:0;padding:10px;text-align:center}.adm-tab.on{border-color:var(--cran);background:#fbeef0}
 .adm-acts{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}.adm-meta{color:#6e5a48;margin-bottom:8px}
 .btn.danger{background:#c9302a;color:#fff;border-color:#8a1a16}
 
@@ -651,6 +651,8 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .headshot img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
 .headshot figcaption{position:absolute;left:0;right:0;bottom:5px;text-align:center;font:700 11px 'Courier Prime','Courier New',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6e5a48}
 .headshot::before{content:"";position:absolute;top:-10px;left:50%;width:70px;height:20px;margin-left:-35px;background:rgba(233,214,160,.85);transform:rotate(3deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.notecard textarea.t{min-height:96px}
+.adm-note .an-text p{margin:0 0 8px;font-size:15.5px;line-height:1.5}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -1471,7 +1473,7 @@ function vSoloResults(){
     ${v.pass?'':`<div class="row" style="margin-top:14px"><button class="btn primary" data-act="soloRewrite">Back to the writers' room</button><span class="spacer"></span><button class="link" data-act="leave">Call it a night</button></div><p class="small muted" style="margin-top:8px">Your pitch is saved. Punch it up and send it back as Take ${take+1}.</p>`}</div>`;
   const reviews=v.pass&&v.reviews&&v.reviews.length?`<div class="paper"><div class="eyebrow">What audiences are saying</div>${v.reviews.map(r=>`<figure class="aud"><blockquote>“${esc(r.q)}”</blockquote><figcaption>${esc(r.w)}</figcaption></figure>`).join('')}</div>`:'';
   if(!v.pass)return slate+banner+notes+`<div class="mcards">${movieCard(p,false,true)}</div>`;
-  return slate+banner+reviews+notes+recapCard()+hofCard()+endCard()+`<div class="mcards">${movieCard(p,true)}</div>
+  return slate+banner+reviews+notes+recapCard()+hofCard()+notesCard()+endCard()+`<div class="mcards">${movieCard(p,true)}</div>
     <div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again</button><button class="btn" data-act="leave">Back to start</button></div>`;
 }
 function vResults(){
@@ -1485,6 +1487,7 @@ function vResults(){
   ${solo?`<div class="paper center"><div class="eyebrow">Studio note</div><p style="font-size:17px;margin:4px 0 0">${esc(soloNote())}</p></div>`:`<div class="paper"><h3>The votes</h3>${sorted.map(p=>`<div class="tally"><span class="dot" style="background:${p.color}"></span><span style="width:120px" class="pname">${esc(p.name)}</span><div class="bar" style="width:${max?((t[p.id]||0)/max*60):0}%"></div><b>${t[p.id]||0}</b></div>`).join('')}</div>`}
   ${recapCard()}
   ${hofCard()}
+  ${notesCard()}
   ${endCard()}
   <div class="mcards">${sorted.map(p=>movieCard(p,true)).join('')}</div>
   ${isHost()?`<div class="row tctl" style="justify-content:center;margin-top:18px"><button class="btn gold" data-act="playAgain">Play again, same setup</button><button class="btn" data-act="leave">New game</button></div>`:''}`;
@@ -2745,7 +2748,7 @@ async function adminFetch(method,body){const st=(S.ui.adm&&S.ui.adm.tab)||'pendi
   if(r.status===429)throw Object.assign(new Error('x'),{code:'limit'});
   if(!r.ok)throw new Error('x');return r.json();}
 async function adminLoad(){const a=S.ui.adm||(S.ui.adm={tab:'pending'});a.loading=true;render();
-  try{const j=await adminFetch('GET');a.list=j.list;a.counts=j.counts||{};a.optins=j.optins||[];a.err=null;}
+  try{const j=await adminFetch('GET');if(a.tab==='notes'){a.notes=j.notes||[];a.list=[];}else{a.list=j.list;a.notes=null;}a.counts=j.counts||{};a.optins=j.optins||[];a.err=null;}
   catch(e){a.err=e.code||'x';a.list=null;}a.loading=false;render();}
 function vAdmin(){
   const a=S.ui.adm||(S.ui.adm={tab:'pending'});const head=`<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>`;
@@ -2764,18 +2767,19 @@ function vAdmin(){
       :x.status==='approved'?(x.featured?b('unfeature',"Remove Marco's pick"):b('feature',"Make it Marco's pick",'gold'))+b('pending','Back to pending')+b('reject','Reject')
       :b('approve','Approve','primary')+b('pending','Back to pending');
     return `<div class="adm-acts">${meta}<div class="row" style="gap:8px;flex-wrap:wrap">${btns}${del}</div></div>`;};
-  return head+`<div class="round-head"><div class="eyebrow">Studio office</div><h2>Hall of Fame review</h2><p>Nothing goes public until you approve it.</p></div>
-  <div class="paper"><div class="adm-tabs">${tab('pending','Pending')}${tab('approved','In the Hall')}${tab('rejected','Rejected')}</div>
+  return head+`<div class="round-head"><div class="eyebrow">Studio office</div><h2>${a.tab==='notes'?'Notes for the studio':'Hall of Fame review'}</h2><p>${a.tab==='notes'?'Suggestions from players. Only you can see these.':'Nothing goes public until you approve it.'}</p></div>
+  <div class="paper"><div class="adm-tabs">${tab('pending','Pending')}${tab('approved','In the Hall')}${tab('rejected','Rejected')}${tab('notes','Notes')}</div>
    <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><button class="btn small" data-act="admCopy">Copy Gooseletter sign-ups (${(a.optins||[]).length})</button><button class="btn small" data-act="admRefresh">Refresh</button><span class="spacer"></span><button class="link small" data-act="admLogout">Log out</button></div>
    ${a.err&&a.err!=='pw'?`<p class="small" style="color:var(--cran);margin-top:10px">${a.err==='limit'?'Too many wrong passwords today. Try again tomorrow.':"Couldn't load the queue. Try Refresh."}</p>`:''}</div>
   ${a.loading&&!a.list?`<div class="paper center"><span class="spin-ld"></span> Loading…</div>`:''}
-  ${a.list?(a.list.length?a.list.map(x=>hofPitchHTML(x,acts(x))).join(''):`<div class="paper center"><p>Nothing here right now.</p></div>`):''}`;}
+  ${a.tab==='notes'&&a.notes?(a.notes.length?a.notes.map(n=>`<div class="paper adm-note"><div class="an-text">${nl2p(n.text)}</div><div class="adm-meta small">${new Date(n.created).toLocaleString()} · ${n.mode?esc(n.mode)+' game · ':''}${n.email?`<a href="mailto:${esc(n.email)}">${esc(n.email)}</a>`:'no email'}</div><div class="row" style="gap:8px">${S.ui.admDel===n.id?`<button class="btn small danger" data-act="admAct" data-a="deletenote" data-id="${n.id}">Tap again to delete</button>`:`<button class="btn small" data-act="admDelAsk" data-id="${n.id}">Delete</button>`}</div></div>`).join(''):`<div class="paper center"><p>No notes yet.</p></div>`)
+   :a.list?(a.list.length?a.list.map(x=>hofPitchHTML(x,acts(x))).join(''):`<div class="paper center"><p>Nothing here right now.</p></div>`):''}`;}
 A.admLogin=()=>{const v=(document.getElementById('admPw')||{}).value||'';if(!v)return;setAdminPw(v);S.ui.adm={tab:'pending'};adminLoad();};
 A.admLogout=()=>{setAdminPw('');S.ui.adm={tab:'pending'};render();};
 A.admTab=el=>{const a=S.ui.adm;a.tab=el.dataset.t;a.list=null;S.ui.admDel=null;adminLoad();};
 A.admRefresh=()=>adminLoad();
 A.admDelAsk=el=>{S.ui.admDel=el.dataset.id;render();};
-A.admAct=async el=>{el.disabled=true;try{await adminFetch('POST',{id:el.dataset.id,action:el.dataset.a});S.ui.admDel=null;toast(({approve:'Inducted',feature:"Marco's pick",unfeature:'Pick removed',reject:'Rejected',pending:'Back in pending',delete:'Deleted'})[el.dataset.a]||'Done');await adminLoad();}catch(e){el.disabled=false;toast(e.code==='pw'?'Log in again':'That didn’t go through');if(e.code==='pw')render();}};
+A.admAct=async el=>{el.disabled=true;try{await adminFetch('POST',{id:el.dataset.id,action:el.dataset.a});S.ui.admDel=null;toast(({approve:'Inducted',feature:"Marco's pick",unfeature:'Pick removed',reject:'Rejected',pending:'Back in pending',delete:'Deleted',deletenote:'Deleted'})[el.dataset.a]||'Done');await adminLoad();}catch(e){el.disabled=false;toast(e.code==='pw'?'Log in again':'That didn’t go through');if(e.code==='pw')render();}};
 A.admCopy=async()=>{const list=(S.ui.adm&&S.ui.adm.optins)||[];if(!list.length){toast('No sign-ups yet');return;}try{await navigator.clipboard.writeText(list.join('\n'));toast(list.length+' email'+(list.length===1?'':'s')+' copied');}catch(e){toast('Copy failed');}};
 function tvShow(i){S.ui.tvFrame=i;
   const scr=document.querySelector('.tvset');if(!scr){render();return;}
@@ -2784,6 +2788,24 @@ function tvShow(i){S.ui.tvFrame=i;
 A.tvTap=()=>{const i=S.ui.tvFrame||0;if(i>=CREDITS.length-1)return A.tvGo();tvShow(i+1);};
 A.tvBack=()=>{const i=S.ui.tvFrame||0;if(i>0)tvShow(i-1);};
 A.tvGo=()=>{if(!S.game||S.game.phase!=='intro')return;A.advance({dataset:{to:'name'}});};
+
+/* notes for the studio (suggestions) */
+function notesCard(){if(!S.web||!S.game)return '';if(!S.game.solo&&!isHost())return '';
+  const sent=(ls('hmh_note_sent')||{})[S.game.code||S.game.createdAt];
+  if(sent)return `<div class="paper notecard center"><div class="eyebrow">Notes for the studio</div><h3 style="margin:6px 0 4px">Got it. Thank you!</h3><p class="small muted">Marco's Funhouse reads every note.</p></div>`;
+  return `<div class="paper notecard"><div class="eyebrow">Notes for the studio</div><h3 style="margin:6px 0 4px">Got a suggestion?</h3>
+  <p class="small muted" style="margin:0 0 8px">Ideas, bugs, a hunk we're missing. Marco's Funhouse reads every one.</p>
+  <textarea class="t" id="noteText" rows="4" maxlength="2000" placeholder="We need a hunk who's a dentist." aria-label="Your suggestion"></textarea>
+  <input class="t" id="noteEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="Email (optional, only if you want a reply)" aria-label="Email (optional)" style="margin-top:8px">
+  <input id="noteWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
+  <div class="row" style="margin-top:10px"><button class="btn primary" data-act="sendNote">Send it to the studio</button></div></div>`;}
+A.sendNote=async el=>{if(el.disabled)return;const v=id=>((document.getElementById(id)||{}).value||'').trim();const text=v('noteText'),email=v('noteEmail');
+  if(text.length<2){toast('Write a note first');return;}if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('That email looks off');return;}
+  el.disabled=true;el.innerHTML='<span class="spin-ld"></span>Sending…';
+  try{const g=S.game;const r=await fetch('/api/notes',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text,email,mode:g.solo?'solo':(g.playMode||''),website:v('noteWeb')})});
+    if(r.status===429){toast("That's a lot of notes for one day. Try again tomorrow.",4000);el.disabled=false;el.textContent='Send it to the studio';return;}
+    if(!r.ok)throw new Error('x');const m=ls('hmh_note_sent')||{};m[g.code||g.createdAt]=Date.now();ls('hmh_note_sent',m);render();toast('Note sent');}
+  catch(e){toast("Couldn't send it. Check your connection and try again.",4000);el.disabled=false;el.textContent='Send it to the studio';}};
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML());const sh=$('#sheet');if(sh)sh.scrollTop=0;if(t)setTimeout(()=>A.hjump({dataset:{t}}),30);};
 A.hjumpToggle=el=>{const l=$('#hjumpList');if(!l)return;const open=l.hidden;l.hidden=!open;el.setAttribute('aria-expanded',String(open));};
 A.hjump=el=>{const sh=$('#sheet'),sec=document.getElementById('hs-'+el.dataset.t);const l=$('#hjumpList');if(l){l.hidden=true;const b=document.querySelector('.hjump-btn');if(b)b.setAttribute('aria-expanded','false');}

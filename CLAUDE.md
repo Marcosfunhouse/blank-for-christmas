@@ -11,6 +11,7 @@
   or on the web) and `AI_ENABLED="false"` in wrangler.toml. Don't add AI-powered features back unless he asks.
 - Hall of Fame: `HallOfFame` Durable Object (SQLite, one instance). /api/hof (public, approved only), /api/hof/submit,
   /api/hof/admin (x-admin-password header vs ADMIN_PASSWORD secret). Client views `hof` (/hall-of-fame) and `admin` (/admin), web only.
+  Suggestions: POST /api/notes -> `notes` table in the same DO; read on /admin under the Notes tab.
 - Pushing to `main` deploys automatically via Cloudflare Workers Builds. Don't push big changes
   during party hours (evenings/weekends in December).
 - Danny owns this project; Marco's Funhouse is the brand. No emojis in the UI.

@@ -6,6 +6,7 @@
 //   /api/hof              GET: approved Hall of Fame pitches (public)
 //   /api/hof/submit       POST: send a pitch in for review
 //   /api/hof/admin        GET/POST: review queue (needs ADMIN_PASSWORD)
+//   /api/notes            POST: a suggestion for the studio (read on the admin page)
 // Everything else is the static game in /public.
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
@@ -32,6 +33,7 @@ export default {
 
     if (p === '/api/ai' && req.method === 'POST') return ai(req, env);
     if (p.startsWith('/api/hof')) return hof(req, env, ctx, p);
+    if (p === '/api/notes' && req.method === 'POST') return note(req, env, ctx);
     if (p.startsWith('/api/')) return json({ error: 'not_found' }, 404);
     return env.ASSETS.fetch(req);
   }
@@ -129,12 +131,39 @@ async function hof(req, env, ctx, p) {
     if (a === 'limit') return json({ error: 'limit' }, 429);
     if (a !== 'ok') return json({ error: 'password' }, 401);
     const url = new URL(req.url);
+    if (req.method === 'GET' && url.searchParams.get('status') === 'notes') return hofStub(env).fetch('https://do/notes');
     if (req.method === 'GET') return hofStub(env).fetch('https://do/admin?status=' + encodeURIComponent(url.searchParams.get('status') || 'pending'));
     if (req.method === 'POST') return hofStub(env).fetch('https://do/admin', { method: 'POST', body: await req.text() });
   }
   return json({ error: 'not_found' }, 404);
 }
 const url0 = req => new URL(req.url).origin;
+
+async function note(req, env, ctx) {
+  if (!env.HOF) return json({ error: 'off' }, 503);
+  let b; try { b = await req.json(); } catch { return json({ error: 'bad_request' }, 400); }
+  if (b.website) return json({ ok: true });
+  const text = clip(b.text, 2000), email = clip(b.email, 120), mode = clip(b.mode, 20);
+  if (text.length < 2) return json({ error: 'missing' }, 400);
+  if (email && !EMAIL_RE.test(email)) return json({ error: 'email' }, 400);
+  const ip = req.headers.get('cf-connecting-ip') || 'local';
+  if (!(await counter(env, 'noteip:' + (await sha(ip + ':' + today())), 10))) return json({ error: 'limit' }, 429);
+  const r = await hofStub(env).fetch('https://do/note', { method: 'POST', body: JSON.stringify({ text, email, mode }) });
+  if (!r.ok) return json({ error: 'full' }, 503);
+  ctx.waitUntil(notifyNote(env, url0(req), text, email, mode));
+  return json({ ok: true });
+}
+async function notifyNote(env, origin, text, email, mode) {
+  if (!env.HOF_EMAIL) return;
+  try {
+    const lines = ['A note for the studio' + (mode ? ` (from a ${mode} game)` : '') + ':', '', text, '', email ? `Reply to: ${email}` : 'No email given.', '', `All notes: ${origin}/admin`];
+    const msg = { from: { email: env.HOF_FROM || 'hall-of-fame@blankforchristmas.com', name: 'Blank for Christmas' }, subject: 'Note for the studio: ' + text.slice(0, 60),
+      text: lines.join('\n'), html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;max-width:560px">${lines.map(l => l ? `<p style="margin:0 0 8px">${escH(l)}</p>` : '').join('')}</div>` };
+    if (env.HOF_NOTIFY_TO) msg.to = env.HOF_NOTIFY_TO;
+    if (email) msg.replyTo = email;
+    await env.HOF_EMAIL.send(msg);
+  } catch (e) { console.log('note email failed', e && (e.code || e.message)); }
+}
 const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 async function notify(env, origin, id, pt, email, newsletter) {
@@ -162,6 +191,7 @@ async function notify(env, origin, id, pt, email, newsletter) {
 export class HallOfFame {
   constructor(ctx, env) {
     this.ctx = ctx; this.sql = ctx.storage.sql;
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS notes(id TEXT PRIMARY KEY, created INTEGER, text TEXT, email TEXT, mode TEXT)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS subs(id TEXT PRIMARY KEY, created INTEGER, status TEXT, featured INTEGER DEFAULT 0, data TEXT, email TEXT, newsletter INTEGER DEFAULT 0)`);
   }
   rows(q, ...a) { return [...this.sql.exec(q, ...a)]; }
@@ -180,11 +210,26 @@ export class HallOfFame {
       this.sql.exec(`INSERT INTO subs(id,created,status,featured,data,email,newsletter) VALUES(?,?,?,?,?,?,?)`, id, Date.now(), 'pending', 0, JSON.stringify(b.pitch), b.email || '', b.newsletter ? 1 : 0);
       return json({ id });
     }
+    if (url.pathname === '/note' && req.method === 'POST') {
+      const n = this.rows(`SELECT COUNT(*) AS n FROM notes`)[0].n;
+      if (n >= 5000) return json({ error: 'full' }, 503);
+      const b = await req.json();
+      this.sql.exec(`INSERT INTO notes(id,created,text,email,mode) VALUES(?,?,?,?,?)`, crypto.randomUUID().slice(0, 12), Date.now(), b.text, b.email || '', b.mode || '');
+      return json({ ok: true });
+    }
+    if (url.pathname === '/notes') {
+      const list = this.rows(`SELECT * FROM notes ORDER BY created DESC LIMIT 500`);
+      const counts = {}; this.rows(`SELECT status, COUNT(*) AS n FROM subs GROUP BY status`).forEach(r => counts[r.status] = r.n);
+      counts.notes = this.rows(`SELECT COUNT(*) AS n FROM notes`)[0].n;
+      const optins = this.rows(`SELECT email FROM subs WHERE newsletter=1 AND email<>''`).map(r => r.email);
+      return json({ notes: list, counts, optins: [...new Set(optins)] });
+    }
     if (url.pathname === '/admin' && req.method === 'GET') {
       const st = url.searchParams.get('status');
       const where = ['pending', 'approved', 'rejected'].includes(st) ? st : 'pending';
       const list = this.rows(`SELECT * FROM subs WHERE status=? ORDER BY featured DESC, created DESC LIMIT 500`, where).map(r => ({ ...this.pub(r), status: r.status, email: r.email, newsletter: !!r.newsletter }));
       const counts = {}; this.rows(`SELECT status, COUNT(*) AS n FROM subs GROUP BY status`).forEach(r => counts[r.status] = r.n);
+      counts.notes = this.rows(`SELECT COUNT(*) AS n FROM notes`)[0].n;
       const optins = this.rows(`SELECT email FROM subs WHERE newsletter=1 AND email<>''`).map(r => r.email);
       return json({ list, counts, optins: [...new Set(optins)] });
     }
@@ -194,7 +239,7 @@ export class HallOfFame {
       const act = { approve: [`UPDATE subs SET status='approved' WHERE id=?`], reject: [`UPDATE subs SET status='rejected', featured=0 WHERE id=?`],
         pending: [`UPDATE subs SET status='pending', featured=0 WHERE id=?`],
         feature: [`UPDATE subs SET status='approved', featured=1 WHERE id=?`], unfeature: [`UPDATE subs SET featured=0 WHERE id=?`],
-        delete: [`DELETE FROM subs WHERE id=?`] }[b.action];
+        delete: [`DELETE FROM subs WHERE id=?`], deletenote: [`DELETE FROM notes WHERE id=?`] }[b.action];
       if (!act) return json({ error: 'bad_action' }, 400);
       this.sql.exec(act[0], id);
       return json({ ok: true });
