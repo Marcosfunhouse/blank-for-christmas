@@ -2307,7 +2307,6 @@ function stile(n,p,r,label,value,meta,changed){
 
 /* ------------------------------------------------------------------ setup: modes */
 const PLAY_MODES={
- solo:{icon:'clapper',label:'Solo',sub:'Just you. Roll a heroine, draw a twist, pitch the studio.'},
  local:{icon:'phone',label:'Pass one device around',sub:'One phone or laptop runs the game. No accounts. Great for a couch of 3 to 8.'},
  online:{icon:'people',label:'Everyone on their own phone',sub:'Friends join with a 4-letter code. Secret twists stay secret.'},
  host:{icon:'mic',label:'Print it, no screens',sub:'A printable host kit: script, charts, cards, slips and ballots. Bring real dice and props.'}};
@@ -2332,7 +2331,7 @@ A.changeMode=()=>{S.ui.modePick=true;render();window.scrollTo(0,0);};
 function propsNeeded(d){return [...new Set([...ROUND_KEYS,'twist'].map(k=>{const id=d.mechanics[k];return id!=='custom'&&PRESETS[id]&&PRESETS[id].prop;}).filter(Boolean))];}
 A.setupSolo=()=>{S.ui.qmSolo=true;S.ui.soloCustom=true;modal(quickMenuHTML());setTimeout(()=>{const i=$('#soloName');if(i)i.focus();},50);};
 function vSetup(){
-  const d=S.draft;if(!d.modeChosen||S.ui.modePick)return vModePick();
+  const d=S.draft;if(!d.modeChosen||S.ui.modePick||!PLAY_MODES[d.playMode])return vModePick();
   const m=d.playMode;const pm=PLAY_MODES[m];
   let n=0;const T=(...a)=>stile(++n,...a);
   const head=`<button class="mode-card" data-act="changeMode"><span class="mc-ic">${ic(pm.icon)}</span><span class="mc-t"><span class="mc-l">Playing</span><b>${pm.label}</b></span><span class="mc-ch">Change</span></button>`;
