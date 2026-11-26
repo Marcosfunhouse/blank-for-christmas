@@ -627,6 +627,7 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .hsec-h{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:28px;margin:6px 0 8px;color:var(--ink)}
 .hend{text-align:center;padding:10px 0 4px}.hend p{margin:0 0 10px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.stile.pulse{animation:none}}
+.hchap{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}.hchap li{display:flex;gap:12px;align-items:flex-start}.hchap .hico{flex:none}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -927,7 +928,7 @@ const PROPS_MECH={name:'realDice',career:'cardRace',motive:'realVillage',hunk:'b
 const DIGITAL_MECH={name:'nameWheel',career:'adventMatch',motive:'mysteryHouses',hunk:'digitalScratch',twist:'digitalHat'};
 
 const ROUNDS={
-  name:{n:1,title:'Your Holiday Movie Identity',blurb:"You can't star in a holiday movie without the perfect festive name. One roll for your first name, one for your last. Write it on your name tag and embrace your cheerful new persona."},
+  name:{n:1,title:'Your Holiday Movie Identity',blurb:"You can't star in a holiday movie without the perfect festive name. Fate picks your first name and your last. Embrace your cheerful new persona."},
   career:{n:2,title:'Secure Your Holiday Calling',blurb:'Every holiday-movie hero has a charming, often struggling career that pulls them back to their hometown. Is it your true calling, or the very career you fled the big city to escape?'},
   motive:{n:3,title:'Your Christmas Motive',blurb:'No holiday story is complete without an urgent, heartwarming and slightly dramatic reason to come home.'},
   hunk:{n:4,title:'Meet Your Holiday Hunk',blurb:"Time to find the flannel-wearing, kind-hearted man who'll make you believe in the magic of Christmas again. Once he's chosen, he's off the market."},
@@ -1368,9 +1369,10 @@ function vTwistPaper(){
      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="saveDrawn" data-id="${w}">Save my slip</button></div></div>`;}
   const qs=`<div class="paper cream"><div class="eyebrow">Grab a slip of paper and a pen</div><h3>Answer these in secret</h3><ol class="twistq">${c.twistQuestions.map(q=>`<li>${esc(q)}</li>`).join('')}</ol>
     <ol class="small" style="margin:10px 0 0;padding-left:18px"><li>Write your answers, fold the slip and toss it in the hat.</li><li>Everyone draws one. Got your own? Put it back and draw again.</li><li>Keep it! Every detail goes into your pitch.</li></ol></div>`;
-  const list=`<div class="paper"><h3>Optional: type in your drawn slip</h3><p class="small muted" style="margin-top:0">Skip this if you like. Typing it in puts the twist on your movie card, the plot starter and the poster.</p><ul class="plist">${ps.map(p=>`<li><span class="dot" style="background:${p.color}"></span><span class="pname">${esc(p.name)}</span><span class="spacer"></span>${p.drawnSlip?(canAct(p)?`<button class="link small" data-act="openDrawn" data-id="${p.id}">Edit</button>`:'')+'<span class="done-badge">✓ Typed in</span>':canAct(p)?`<button class="btn small" data-act="openDrawn" data-id="${p.id}">Type in my slip</button>`:'<span class="small muted">Holding a paper slip</span>'}</li>`).join('')}</ul></div>`;
-  return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>${esc(ROUNDS.twist.blurb)}</p>${slrow('Director: you &amp; your friends',5,1)}</div>${g.cues&&g.cues.twist?`<div class="cue"><span class="cue-l">Host cue</span>${esc(g.cues.twist)}</div>`:''}${top}${qs}${list}`;
+  const list=`<div class="paper"><h3>Optional: type in your drawn slip</h3><p class="small muted" style="margin-top:0">Skip this if you like. Typing it in puts the twist on your movie card and your pitch sheet.</p><ul class="plist">${ps.map(p=>`<li><span class="dot" style="background:${p.color}"></span><span class="pname">${esc(p.name)}</span><span class="spacer"></span>${p.drawnSlip?(canAct(p)?`<button class="link small" data-act="openDrawn" data-id="${p.id}">Edit</button>`:'')+'<span class="done-badge">✓ Typed in</span>':canAct(p)?`<button class="btn small" data-act="openDrawn" data-id="${p.id}">Type in my slip</button>`:'<span class="small muted">Holding a paper slip</span>'}</li>`).join('')}</ul></div>`;
+  return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>${esc(twistBlurb())}</p>${slrow('Director: you &amp; your friends',5,1)}</div>${g.cues&&g.cues.twist?`<div class="cue"><span class="cue-l">Host cue</span>${esc(g.cues.twist)}</div>`:''}${top}${qs}${list}`;
 }
+function twistBlurb(){return S.game&&S.game.solo?'Every holiday movie needs drama before the happy ending. The studio hands you a twist, and every detail has to make it into your pitch.':ROUNDS.twist.blurb;}
 function vTwist(){
   if(S.game.solo&&!S.game.twists)return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>Every holiday movie needs drama before the happy ending. Tonight the studio's writers' room is filling the hat for you.</p>${slrow('Director: you &amp; your friends',5,1)}</div>
    <div class="paper center"><h3>The studio wrote you a twist</h3><p class="small muted">No friends to fill the hat tonight, so the writers' room did it for you. Whatever's on the slip goes in your movie.</p><button class="btn gold" data-act="soloTwist">Draw my twist</button></div>`;
@@ -1395,7 +1397,7 @@ function vTwist(){
     return `<li><span class="dot" style="background:${p.color}"></span><span class="pname">${esc(p.name)}</span><span class="spacer"></span>${has?'<span class="done-badge">✓ In the hat</span>':canAct(p)?`<button class="btn small" data-act="openSlip" data-id="${p.id}">Write slip</button>`:'<span class="small muted">Writing…</span>'}</li>`;}).join('')}</ul>
     ${!drawn&&isHost()?`<div class="row" style="margin-top:12px"><button class="btn gold" data-act="drawHat" ${Object.keys(S.slips).filter(id=>S.players[id]).length?'':'disabled'}>Draw from the hat</button><span class="small muted">Everyone gets someone else's slip.</span></div>`:''}
     ${drawn?'<p class="small muted" style="margin-top:10px">You must use every detail from your slip in your pitch.</p>':''}</div>`;
-  return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>${esc(ROUNDS.twist.blurb)}</p>${slrow('Director: you &amp; your friends',5,1)}</div>
+  return `<div class="round-head"><div class="eyebrow">Round 5 of 5 · Chapter 5 of her story</div><h2>${esc(ROUNDS.twist.title)}</h2><p>${esc(twistBlurb())}</p>${slrow('Director: you &amp; your friends',5,1)}</div>
   ${g.cues&&g.cues.twist?`<div class="cue"><span class="cue-l">Host cue</span>${esc(g.cues.twist)}</div>`:''}${top}${list}`;
 }
 function timerOf(t){if(!t)return 0;return t.endsAt?t.endsAt-Date.now():(t.left!=null?t.left:0);}
@@ -2529,31 +2531,30 @@ function howtoSection(t){
     ${row(ic('mic'),'Print it, no screens','Download the host kit: script, charts, cut-out cards, slips, name tags and ballots. Bring real dice and props, and players just need a pen.')}
     <p class="small muted">Mix and match: plenty of hosts print the kit <i>and</i> keep the app on a TV for timers and reveals.</p>`;}
   if(t==='rounds'){const R=[
-    ['dice','Round 1 · Your Name','Roll for a festive first and last name. Write it on your name tag and commit to the bit.','Two dice','Split-flap name sign','~5 min'],
-    ['cards','Round 2 · Your Job','A frantic four-of-a-kind card race. First to four matching cards claims that career (Dolphin Trainer, anyone?).','A deck of cards, one rank per player','Advent calendar match','~10 min'],
-    ['house','Round 3 · Your Crisis','Pick a house in the village to discover your dramatic reason for coming home.','A Christmas village or 8 decorations, labeled','Pick a mystery cottage on screen','~10 min'],
-    ['cup','Round 4 · Your Hunk','Beer-pong style: sink a cup, meet your man. Once he\'s chosen, he\'s off the market.','8 solo cups + 2–3 ping pong balls','Scratch-off ticket','~10 min'],
-    ['hat','Round 5 · The Twist','Everyone secretly answers three questions. Slips go in the hat; you draw someone else\'s and must use every detail.','Slips + pens + a hat or bowl','Typed on phones, drawn from a digital hat','~10 min'],
-    ['pencil','Pitch prep','Mash it all into one blockbuster pitch.','A timer','Built-in timer','5 min'],
-    ['clapper','The pitches','Each player sells their movie to the executives with a straight face.','A timer, a "stage"','Built-in timer + big-screen view','~2 min each'],
-    ['ballot','The vote','Secret ballots. No voting for yourself. Winner gets greenlit (and a prize).','Ballots + the hat','Secret votes on phones','~5 min']];
-    b=`<p class="small muted" style="margin-top:0">Every round works with real props <b>or</b> fully digital. You choose per round during setup, and can mix them.</p>`+R.map(([i,ti,d,prop,dig,time])=>`<div class="hround"><div class="hrh"><span class="hico">${ic(i)}</span><b>${ti}</b><span class="tag">${time}</span></div><div class="small">${d}</div><div class="hopts"><span><b>With props:</b> ${prop}</span><span><b>Digital:</b> ${dig}</span></div></div>`).join('');}
+    ['dice','Her name','Fate picks a festive first and last name. Commit to the bit.'],
+    ['cards','Her job','A charming, slightly baffling career that pulls her back to her hometown.'],
+    ['house','Her crisis','The urgent, dramatic reason she has to come home for Christmas.'],
+    ['cup','Her hunk','The flannel-wearing man who restores her faith in Christmas. Once he\'s taken, he\'s off the market.'],
+    ['hat','The twist','Three secret answers become someone else\'s plot twist, and every detail has to make it into the pitch.'],
+    ['clapper','The pitch','Mash it all into one blockbuster and sell it with a straight face.'],
+    ['ballot','The vote','Secret ballots, no voting for yourself. The winner gets greenlit.']];
+    b=`<p class="small muted" style="margin-top:0">How each round is played (dice, cards, a scratch-off, a split-flap sign…) depends on how you set up the game. The screen explains it when you get there.</p><ol class="hchap">`+R.map(([i,ti,d])=>`<li><span class="hico">${ic(i)}</span><div><b>${ti}</b><div class="small">${d}</div></div></li>`).join('')+`</ol>`;}
   if(t==='supplies'){b=`
     <h4 style="margin-top:0">Must-haves</h4>
     <ul class="hcheck"><li>One phone, tablet or laptop running this page <span class="muted">(or the printed host kit)</span></li><li>Pens for everyone</li><li>Something festive to drink <span class="muted">(strongly implied by the "Hungover for Christmas" energy)</span></li></ul>
-    <h4>Props (all optional, every round has a digital backup)</h4>
-    <ul class="hcheck"><li>Two dice, for names</li><li>A deck of cards, for the job race</li><li>A Christmas village or 8 labeled decorations, for crises</li><li>8 solo cups + 2–3 ping pong balls, for hunks</li><li>A hat, stocking or bowl, for twist slips and ballots</li></ul>
+    <h4>Props</h4>
+    <p class="small" style="margin-top:0">Only if your setup uses them. Quick play needs none. If you pick real dice, cards or cups when you customize, the game lists exactly what to grab before you start.</p>
     <h4>Nice to have</h4>
-    <ul class="hcheck"><li>A TV or laptop for the big-screen view (the TV button in the game)</li><li>The printable host kit: name tags, worksheets, slips, ballots, cut-out cards</li><li>A prize: a tiara, a "Golden Ornament" award, a gas-station snow globe</li><li>Scarves, Santa hats, a stack of ugly sweaters</li></ul>
+    <ul class="hcheck"><li>A TV or laptop for the big-screen view (the TV button in the game)</li><li>A prize: a tiara, a "Golden Ornament" award, a gas-station snow globe</li><li>Scarves, Santa hats, a stack of ugly sweaters</li></ul>
     ${S.caps.downloads?`<button class="btn small gold" data-act="downloadKit" style="margin-top:6px">Download the host kit</button><p class="small muted">The kit reflects whatever you set up. Download it after choosing your version.</p>`:''}`;}
   if(t==='players'){b=`
-    <div class="hsweet"><div class="big">5–8</div><div><b>players is the sweet spot.</b><div class="small">Everyone gets a unique job, crisis and hunk (the lists have 8 each), pitches stay snappy, and the vote is actually competitive.</div></div></div>
+    <div class="hsweet"><div class="big">5–8</div><div><b>players is the sweet spot.</b><div class="small">Pitches stay snappy, the vote is actually competitive, and nobody waits too long for their turn.</div></div></div>
     <table class="htable"><tr><th>Players</th><th>How to play it</th><th>Time</th></tr>
     <tr><td>3–4</td><td>Works great, just faster. Give everyone 3 minutes to pitch so the drama can breathe.</td><td>45–60 min</td></tr>
     <tr><td><b>5–8</b></td><td><b>Ideal.</b> Play as written.</td><td><b>60–90 min</b></td></tr>
-    <tr><td>9–12</td><td>Pair up into writing teams: two people, one movie, one name tag. Or add items to each list so nobody shares a hunk.</td><td>75–100 min</td></tr>
+    <tr><td>9–12</td><td>Pair up into writing teams: two people, one movie. Or add more names, jobs and hunks when you customize.</td><td>75–100 min</td></tr>
     <tr><td>13+</td><td>Teams of 3. Teams pitch together, and the bad acting becomes a feature.</td><td>~90 min</td></tr></table>
-    <p class="small muted">Rule of thumb: about 45 minutes, plus 4–5 minutes per movie. Card race tip: use one rank of cards (four of a kind) per player or team, so 6 players means A, K, Q, J, 10, 9.</p>
+    <p class="small muted">Rule of thumb: about 45 minutes, plus 4–5 minutes per movie.</p>
     <h4>Who it's for</h4><p class="small">Friends, family, office parties, a Friendsgiving that ran long. Rewrite the names, jobs and hunks with your own inside jokes, or keep Marco's version for a mixed crowd.</p>`;}
   if(t==='tips'){b=`
     <ul class="htips">
@@ -2566,7 +2567,7 @@ function howtoSection(t){
     <li><b>Send in the classic.</b> After the vote, submit the best pitch to the Hall of Fame${S.web?'':' (on blankforchristmas.com)'}.</li>
     <li><b>Prizes:</b> the winner gets greenlit. Last place gets a sequel.</li></ul>
     <h4>Quick FAQ</h4>
-    <div class="faq"><b>Do we need accounts?</b><span>Only if friends join on their own phones. One shared device or the printed kit needs nothing.</span>
+    <div class="faq"><b>Do we need accounts?</b><span>${S.web?'No. Not even when friends join on their own phones.':'Only if friends join on their own phones. One shared device or the printed kit needs nothing.'}</span>
     <b>Can we save our version?</b><span>Yes. Custom setups save on this device, and you can copy a setup to share it.</span>
     <b>Does it use AI?</b><span>No. Every name, job, crisis, hunk and twist was written by people (Marco, mostly). The only machine in the room is your phone's own dictation, if you tap "Say it out loud."</span>
     <b>Someone left mid-game?</b><span>The host can skip rounds or remove players from the menu.</span></div>`;}
