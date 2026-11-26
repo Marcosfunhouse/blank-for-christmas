@@ -538,6 +538,15 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .steps i.on{background:#9fc79b}
 .steps i.now{background:#f6e7ad;box-shadow:0 0 8px rgba(246,231,173,.8)}
 .cue{background:#fdf5db;color:var(--ink);border:2px solid #e2b93a;font-style:normal;border-radius:12px}
+.topbar+.round-head,.topbar+.winner{margin-top:112px}
+.topbar .ttl.rot{font-family:'Redbell','Cortesia',cursive;font-size:24px;line-height:1.15;padding-top:2px}
+#ttlWord{transition:opacity .3s}#ttlWord.out{opacity:0}
+.steps.in-clap{position:absolute;left:43px;right:3.5px;top:-29px;height:26px;margin:0;padding:0;gap:0;border-radius:0 6px 0 0;background:none;display:flex;z-index:1;pointer-events:none}
+.steps.in-clap i{flex:1;height:auto;border-radius:0;background:rgba(31,31,33,.9);box-shadow:inset -2px 0 0 #1f1f21}
+.steps.in-clap i:last-child{border-radius:0 5px 0 0;box-shadow:none}
+.steps.in-clap i.on{background:transparent}
+.steps.in-clap i.now{background:rgba(255,246,214,.18);box-shadow:inset 0 0 0 2px #f6e7ad,0 0 10px rgba(246,231,173,.85),inset -2px 0 0 #1f1f21}
+
 .cue-l{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7a6418;margin-bottom:2px}
 .timer{font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:400;background:var(--paper);color:var(--ink);border-top:none;border-radius:16px;padding:12px 28px;position:relative;margin:34px auto 14px;font-variant-numeric:tabular-nums;border:1.5px solid #cfd1d4}
 .timer::before{content:'';position:absolute;left:-1.5px;right:-1.5px;top:-20px;height:22px;border-radius:7px 7px 0 0;background:var(--stripe);box-shadow:inset 0 0 0 4px var(--clap)}
@@ -759,6 +768,7 @@ figure.aud figcaption{font-size:13px;color:var(--muted);margin-top:2px}
 <div id="toast"></div>
 <script>
 "use strict";
+const BLANK_WORDS=['Blank','Dolphin Trainer','Hungover','Divorced (Again)','Banned from Costco','Snowed In With My Ex','Accidentally Engaged','Fired by Santa','In Witness Protection','Haunted','On Jury Duty','Somehow a Duke','Kidnapped by Elves','Mall Santa','Stuck in a Snow Globe','Running From the Mob','Barely Employed','Married to a Ghost','Cancelled','Evicted'];let BLANK_I=0;
 const AI_FEATURES=false; // the game is fully hand-made; flip to true to bring the AI tools back
 /* ------------------------------------------------------------------ data */
 const RANKS=['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
@@ -981,6 +991,8 @@ function render(){
   if(keep){const el=document.querySelector(`[data-k="${CSS.escape(keep.k)}"]`);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(e){}}}
   if(document.querySelector('.sc-ticket'))mountScratch();
   if(document.querySelector('.flapboard'))mountFlaps();
+  {const st=app.querySelector(':scope .steps'),rh=app.querySelector('.round-head,.winner');if(st&&rh){rh.prepend(st);st.classList.add('in-clap');}}
+  fitTtl();
   if(S.web){const want=S.view==='hof'?'/hall-of-fame':S.view==='admin'?'/admin':'/';if(location.pathname!==want)try{history.replaceState(null,'',want);}catch(e){}}
   tick();document.body.dataset.wrap=wrapFor();document.body.dataset.scene=S.view==='game'?((S.game&&S.game.phase)||'lobby'):S.view;
 }
@@ -1158,7 +1170,8 @@ function vGame(){
   if(!g){return `<div class="paper center"><span class="spin-ld"></span> Finding your game…<p class="small muted">If this takes long, the code may be wrong.</p><button class="btn" data-act="leave">Back</button></div>`;}
   if(S.tv)return vTV();
   const idx=PHASES.indexOf(g.phase);
-  const top=`<div class="topbar"><span class="ttl">${esc(g.content.title)}</span><span class="spacer"></span>${S.store.online?`<span class="code-pill">${esc(g.code)}</span>`:''}<button class="btn small ghost" data-act="tv" title="Big-screen view" aria-label="Big-screen view">${ic('tv')}</button><button class="btn small ghost" data-act="menu" aria-label="Menu">${ic('menu')}</button></div>
+  const rot=/^blank for christmas$/i.test((g.content.title||'').trim());
+  const top=`<div class="topbar">${rot?`<span class="ttl rot"><span id="ttlWord">${esc(BLANK_WORDS[BLANK_I])}</span> for Christmas</span>`:`<span class="ttl">${esc(g.content.title)}</span>`}<span class="spacer"></span>${S.store.online?`<span class="code-pill">${esc(g.code)}</span>`:''}<button class="btn small ghost" data-act="tv" title="Big-screen view" aria-label="Big-screen view">${ic('tv')}</button><button class="btn small ghost" data-act="menu" aria-label="Menu">${ic('menu')}</button></div>
     <div class="steps">${PHASES.slice(1).map((p,i)=>`<i class="${i+1<idx?'on':i+1===idx?'now':''}"></i>`).join('')}</div>`;
   let body='';
   switch(g.phase){
@@ -2680,7 +2693,14 @@ const GOLD_BOW='url("data:image/svg+xml;utf8,'+encodeURIComponent(starBowSVG({li
 document.documentElement.style.setProperty('--goldbow',GOLD_BOW);
 
 /* boot */
-(function(){const words=['Blank','Dolphin Trainer','Hungover','Divorced (Again)','Banned from Costco','Snowed In With My Ex','Accidentally Engaged','Fired by Santa','In Witness Protection','Haunted','On Jury Duty','Somehow a Duke','Kidnapped by Elves','Mall Santa','Stuck in a Snow Globe','Running From the Mob','Barely Employed','Married to a Ghost','Cancelled','Evicted'];let i=0;setInterval(()=>{const el=document.getElementById('blankWord');if(!el)return;el.classList.add('out');setTimeout(()=>{i=(i+1)%words.length;el.textContent=words[i];const sm=window.innerWidth<480;el.setAttribute('font-size',40);try{const w=el.getComputedTextLength();if(w>370)el.setAttribute('font-size',Math.floor(40*370/w));}catch(e){}el.classList.remove('out');},300);},2000);})();
+
+function fitTtl(){const t=document.querySelector('.topbar .ttl.rot');if(!t)return;t.style.fontSize='';let fs=parseFloat(getComputedStyle(t).fontSize)||22;let n=0;while(t.scrollWidth>t.clientWidth+1&&fs>12&&n<20){fs-=1;t.style.fontSize=fs+'px';n++;}}
+setInterval(()=>{const el=document.getElementById('blankWord'),tw=document.getElementById('ttlWord');if(!el&&!tw)return;
+  [el,tw].forEach(x=>x&&x.classList.add('out'));
+  setTimeout(()=>{BLANK_I=(BLANK_I+1)%BLANK_WORDS.length;const w=BLANK_WORDS[BLANK_I];
+    const a=document.getElementById('blankWord');if(a){a.textContent=w;a.setAttribute('font-size',40);try{const L=a.getComputedTextLength();if(L>370)a.setAttribute('font-size',Math.floor(40*370/L));}catch(e){}a.classList.remove('out');}
+    const b=document.getElementById('ttlWord');if(b){b.textContent=w;fitTtl();b.classList.remove('out');}
+  },300);},2000);
 render();
 
 /* ------------------------------------------------------------------ public-site mode
