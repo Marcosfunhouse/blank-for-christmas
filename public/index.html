@@ -998,7 +998,7 @@ function toast(msg,ms=2600){const t=$('#toast');t.textContent=msg;t.classList.ad
 function fmt(ms){ms=Math.max(0,ms);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function getPath(o,path){return path.split('.').reduce((a,k)=>a==null?a:a[k],o);}
 function setPath(o,path,v){const ks=path.split('.');let c=o;for(let i=0;i<ks.length-1;i++){if(c[ks[i]]==null)c[ks[i]]={};c=c[ks[i]];}c[ks[ks.length-1]]=v;}
-function chime(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=chime.c||(chime.c=new A());[0,0.18,0.36].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=[784,988,1319][i];g.gain.setValueAtTime(0.0001,c.currentTime+d);g.gain.exponentialRampToValueAtTime(0.25,c.currentTime+d+0.02);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d+0.6);o.connect(g).connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+0.7);});}catch(e){}}
+function chime(){if(ls('hmh_sfx')===false)return;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=chime.c||(chime.c=new A());[0,0.18,0.36].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=[784,988,1319][i];g.gain.setValueAtTime(0.0001,c.currentTime+d);g.gain.exponentialRampToValueAtTime(0.25,c.currentTime+d+0.02);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+d+0.6);o.connect(g).connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+0.7);});}catch(e){}}
 function confetti(){const cs=['#d4ab55','#a3162f','#fff','#1f6b4f','#f0d595'];for(let i=0;i<70;i++){const d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=cs[i%cs.length];d.style.animationDelay=Math.random()*0.8+'s';d.style.borderRadius=Math.random()>.5?'50%':'2px';document.body.appendChild(d);setTimeout(()=>d.remove(),3800);}}
 
 /* ------------------------------------------------------------------ stores */
@@ -1087,6 +1087,10 @@ function render(){
   {const st=app.querySelector(':scope .steps'),rh=app.querySelector('.round-head,.winner');if(st&&rh){rh.prepend(st);st.classList.add('in-clap');}}
   fitTtl();
   if(DICT&&!dictBox(DICT.pid))dictStop();
+  if(S.view==='game'&&S.game){const ph=S.game.phase,key=(S.game.code||'')+ph+(S.game.take||'');if(S.ui.lastPh&&S.ui.lastPh!==key){
+      if(['intro','name','career','motive','hunk','twist','prep','pitch','vote'].includes(ph))SFX.snap();
+      else if(ph==='results'){if(S.game.solo){const v=S.game.verdict;if(v&&v.pass===false)SFX.womp();else SFX.fanfare();}else SFX.fanfare();}}
+    S.ui.lastPh=key;}else S.ui.lastPh=null;
   if(S.web){const want=S.view==='hof'?'/hall-of-fame':S.view==='admin'?'/admin':'/';if(location.pathname!==want)try{history.replaceState(null,'',want);}catch(e){}}
   tick();document.body.dataset.wrap=wrapFor();document.body.dataset.scene=S.view==='game'?((S.game&&S.game.phase)||'lobby'):S.view;
 }
@@ -1191,7 +1195,7 @@ function vGame(){
   if(S.tv)return vTV();
   const idx=PHASES.indexOf(g.phase);
   const rot=/^blank for christmas$/i.test((g.content.title||'').trim());
-  const top=`<div class="topbar">${rot?`<span class="ttl rot"><span id="ttlWord">${esc(BLANK_WORDS[BLANK_I])}</span> for Christmas</span>`:`<span class="ttl">${esc(g.content.title)}</span>`}<span class="spacer"></span>${S.store.online?`<span class="code-pill">${esc(g.code)}</span>`:''}<button class="btn small ghost" data-act="tv" title="Big-screen view" aria-label="Big-screen view">${ic('tv')}</button><button class="btn small ghost" data-act="menu" aria-label="Menu">${ic('menu')}</button></div>
+  const top=`<div class="topbar">${rot?`<span class="ttl rot"><span id="ttlWord">${esc(BLANK_WORDS[BLANK_I])}</span> for Christmas</span>`:`<span class="ttl">${esc(g.content.title)}</span>`}<span class="spacer"></span>${S.store.online?`<span class="code-pill">${esc(g.code)}</span>`:''}${sfxBtn()}<button class="btn small ghost" data-act="tv" title="Big-screen view" aria-label="Big-screen view">${ic('tv')}</button><button class="btn small ghost" data-act="menu" aria-label="Menu">${ic('menu')}</button></div>
     <div class="steps">${PHASES.slice(1).map((p,i)=>`<i class="${i+1<idx?'on':i+1===idx?'now':''}"></i>`).join('')}</div>`;
   let body='';
   switch(g.phase){
@@ -1685,7 +1689,32 @@ function flapBoardHTML(p){const c=C();
    <div class="fb-out" id="fbOut">${p.first!=null&&p.last!=null?esc(fullName(p)):p.first!=null||p.last!=null?'Now the other one…':'Swipe down. Get famous.'}</div></div>
    ${nt?`<p class="small muted center" style="margin:6px 0 0">Names other players already have are skipped.</p>`:''}`;}
 function flapEls(pid,step){const col=document.querySelector(`.flapcol[data-id="${pid}"][data-step="${step}"]`);if(!col)return null;const q=c=>col.querySelector(c+' span');return {col,top:q('.top'),bot:q('.bot'),ftop:q('.ftop'),fbot:q('.fbot'),ftopEl:col.querySelector('.ftop'),fbotEl:col.querySelector('.fbot')};}
-function flapTick(){try{const c=chime.c||(chime.c=new (window.AudioContext||window.webkitAudioContext)());const len=.025,buf=c.createBuffer(1,c.sampleRate*len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);const s=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=2400;g.gain.value=.25;s.buffer=buf;s.connect(f).connect(g).connect(c.destination);s.start();}catch(e){}}
+
+/* ------------------------------------------------------------------ sound effects (made in the browser, no audio files) */
+const SFX_ON=()=>ls('hmh_sfx')!==false;
+function actx(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;const c=chime.c||(chime.c=new A());if(c.state==='suspended')c.resume();return c;}catch(e){return null;}}
+function noiseBuf(c,sec,shape){const b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*sec)),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*shape(i/d.length);return b;}
+const SFX={
+ snap(){const c=SFX_ON()&&actx();if(!c)return;const t=c.currentTime;
+   const s=c.createBufferSource();s.buffer=noiseBuf(c,.07,x=>Math.pow(1-x,4));const f=c.createBiquadFilter();f.type='highpass';f.frequency.value=1200;const g=c.createGain();g.gain.value=.55;s.connect(f).connect(g).connect(c.destination);s.start(t);
+   const o=c.createOscillator(),og=c.createGain();o.type='sine';o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(60,t+.12);og.gain.setValueAtTime(.4,t);og.gain.exponentialRampToValueAtTime(.0001,t+.14);o.connect(og).connect(c.destination);o.start(t);o.stop(t+.15);},
+ scratch(){const c=SFX_ON()&&actx();if(!c)return;const now=performance.now();if(SFX._sc&&now-SFX._sc<55)return;SFX._sc=now;const t=c.currentTime;
+   const s=c.createBufferSource();s.buffer=noiseBuf(c,.06,x=>Math.sin(Math.PI*x)*(.6+.4*Math.random()));const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=3200+Math.random()*1400;f.Q.value=.9;const g=c.createGain();g.gain.value=.22;s.connect(f).connect(g).connect(c.destination);s.start(t);},
+ creak(){const c=SFX_ON()&&actx();if(!c)return;const t=c.currentTime,d=.42;
+   const o=c.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(150,t);o.frequency.linearRampToValueAtTime(230,t+d*.4);o.frequency.linearRampToValueAtTime(120,t+d);
+   const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=28;lg.gain.value=25;lfo.connect(lg).connect(o.frequency);
+   const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=900;f.Q.value=6;const g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.18,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+   o.connect(f).connect(g).connect(c.destination);o.start(t);lfo.start(t);o.stop(t+d);lfo.stop(t+d);},
+ thud(){const c=SFX_ON()&&actx();if(!c)return;const t=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(45,t+.25);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.32);},
+ fanfare(){const c=SFX_ON()&&actx();if(!c)return;const t=c.currentTime;
+   [[523,0,.16],[659,.16,.16],[784,.32,.16],[1047,.48,.55],[784,.48,.55],[659,.48,.55]].forEach(([fq,st,du])=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='sawtooth';o.frequency.value=fq;f.type='lowpass';f.frequency.value=2600;
+     g.gain.setValueAtTime(.0001,t+st);g.gain.exponentialRampToValueAtTime(.13,t+st+.03);g.gain.setValueAtTime(.13,t+st+du*.7);g.gain.exponentialRampToValueAtTime(.0001,t+st+du);o.connect(f).connect(g).connect(c.destination);o.start(t+st);o.stop(t+st+du+.05);});},
+ womp(){const c=SFX_ON()&&actx();if(!c)return;const t=c.currentTime;
+   [[392,0,.32],[370,.34,.32],[349,.68,.32],[330,1.02,.9]].forEach(([fq,st,du],k)=>{const o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='sawtooth';o.frequency.setValueAtTime(fq,t+st);if(k===3){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=6;lg.gain.value=9;l.connect(lg).connect(o.frequency);l.start(t+st);l.stop(t+st+du);}
+     f.type='lowpass';f.frequency.value=900;g.gain.setValueAtTime(.0001,t+st);g.gain.exponentialRampToValueAtTime(.16,t+st+.04);g.gain.exponentialRampToValueAtTime(.0001,t+st+du);o.connect(f).connect(g).connect(c.destination);o.start(t+st);o.stop(t+st+du+.05);});}
+};
+function sfxBtn(cls){const on=SFX_ON();return `<button class="btn small ghost ${cls||''}" data-act="sfxToggle" aria-pressed="${on}" title="${on?'Sound effects on':'Sound effects off'}" aria-label="${on?'Turn sound effects off':'Turn sound effects on'}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>${on?'<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>':'<path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'}</svg></button>`;}
+function flapTick(){if(!SFX_ON())return;try{const c=chime.c||(chime.c=new (window.AudioContext||window.webkitAudioContext)());const len=.025,buf=c.createBuffer(1,c.sampleRate*len,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);const s=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=2400;g.gain.value=.25;s.buffer=buf;s.connect(f).connect(g).connect(c.destination);s.start();}catch(e){}}
 async function flipOnce(pid,step,from,to,dur){const list=step==='first'?C().firstNames:C().lastNames;const e=flapEls(pid,step);
   const A=flapText(list,from),B=flapText(list,to);
   if(e){e.top.textContent=B;e.bot.textContent=A;e.ftop.textContent=A;e.fbot.textContent=B;
@@ -1765,7 +1794,7 @@ function adventRefresh(pid,key){const el=document.querySelector(`.advent[data-id
   el.querySelectorAll('.adoor').forEach((b,j)=>{b.classList.toggle('open',!!(a.open[j]||a.matched[j]));b.classList.toggle('hit',!!a.matched[j]);b.disabled=!!(a.done||a.busy);});
   const m=el.querySelector('#advMsg');if(m)m.textContent=a.msg;el.querySelectorAll('.adv-tries i').forEach((i,k)=>i.classList.toggle('on',k<a.tries));}
 A.openDoor=async el=>{const pid=el.dataset.id,key=el.dataset.key,j=+el.dataset.d;const a=adventFor(pid,key);
-  if(a.done||a.busy||a.open[j]||a.matched[j])return;a.open[j]=1;flapTick();
+  if(a.done||a.busy||a.open[j]||a.matched[j])return;a.open[j]=1;SFX.creak();
   if(a.first===null){a.first=j;a.msg='Now open another…';adventRefresh(pid,key);return;}
   const f=a.first;a.first=null;a.busy=true;const d1=a.doors[f],d2=a.doors[j];
   const same=d1.t===d2.t&&(d1.t==='coal'||(d1.t==='sym'&&d1.sym===d2.sym)||(d1.t==='item'&&d1.i===d2.i));
@@ -1774,7 +1803,7 @@ A.openDoor=async el=>{const pid=el.dataset.id,key=el.dataset.key,j=+el.dataset.d
     if(pool.length)await commit(key,pid,pool.includes(d1.i)?d1.i:pool[Math.floor(Math.random()*pool.length)]);return;}
   if(same&&d1.t==='sym'){a.matched[f]=a.matched[j]=1;a.done=true;a.msg="It's a match! The studio is drawing your calling…";adventRefresh(pid,key);chime();
     await sleep(1400);const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];if(pool.length)await commit(key,pid,pool[Math.floor(Math.random()*pool.length)]);return;}
-  if(!unlimitedTries())a.tries--;a.msg=same?'Two lumps of coal. Ho ho no.':(a.tries>0?'No match. Close them up and try again.':'Out of tries!');adventRefresh(pid,key);
+  if(!unlimitedTries())a.tries--;if(same)SFX.thud();a.msg=same?'Two lumps of coal. Ho ho no.':(a.tries>0?'No match. Close them up and try again.':'Out of tries!');adventRefresh(pid,key);
   await sleep(same?1500:1100);a.open[f]=a.open[j]=0;a.busy=false;
   if(a.tries<=0&&!unlimitedTries()){a.done=true;a.msg=key==='hunk'?'Out of tries. The studio set you up…':'The studio assigned you a job…';adventRefresh(pid,key);await sleep(1300);
     const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];if(pool.length)await commit(key,pid,pool[Math.floor(Math.random()*pool.length)]);return;}
@@ -1812,7 +1841,7 @@ function mountScratch(){
       drawFoil(cv);t.strokes[i].forEach(([x,y])=>eraseAt(cv,x,y));
       let down=false,moves=0;
       const at=e=>{const b=cv.getBoundingClientRect();return [(e.clientX-b.left)/b.width,(e.clientY-b.top)/b.height];};
-      const scr=e=>{if(!down||t.won)return;const [x,y]=at(e);eraseAt(cv,x,y);t.strokes[i].push([x,y]);if(++moves%5===0&&clearedFrac(cv)>.42)revealCell(pid,key,i,cell);};
+      const scr=e=>{if(!down||t.won)return;const [x,y]=at(e);eraseAt(cv,x,y);SFX.scratch();t.strokes[i].push([x,y]);if(++moves%5===0&&clearedFrac(cv)>.42)revealCell(pid,key,i,cell);};
       cv.addEventListener('pointerdown',e=>{if(t.won)return;down=true;try{cv.setPointerCapture(e.pointerId);}catch(x){}scr(e);e.preventDefault();});
       cv.addEventListener('pointermove',scr);
       const up=()=>{if(down&&clearedFrac(cv)>.3)revealCell(pid,key,i,cell);down=false;};
@@ -1931,6 +1960,7 @@ A.resume=()=>{const s=ls('hmh_session');if(!s)return;
   if(s.mode==='local'){const d=ls('hmh_local');if(!d||!d.game){ls('hmh_session',null);toast('Nothing to resume.');render();return;}S.myUid='local';openStore(new LocalStore(d));S.view='game';render();}
   else if(S.caps.db){myUid().then(u=>{S.myUid=u;openStore(new DbStore(S.caps.db,s.code));S.view='game';render();});}
   else toast('Online games need this page opened from Claude.');};
+A.sfxToggle=el=>{const on=!SFX_ON();ls('hmh_sfx',on);if(on)setTimeout(()=>SFX.snap(),30);if(el&&el.dataset&&el.dataset.close)closeModal();render();toast(on?'Sound effects on':'Sound effects off');};
 A.leave=()=>{if(S.store)S.store.stop();S.store=null;S.game=null;ls('hmh_session',null);S.view='home';S.tv=false;closeModal();render();};
 A.join=async()=>{
   const f=S.ui.join;const code=(f.code||'').toUpperCase().trim();const name=(f.name||'').trim();
@@ -2035,6 +2065,7 @@ A.menu=()=>{
    ${host&&i<PHASES.length-1?`<button class="btn" data-act="jump" data-to="${PHASES[i+1]}">Skip to: ${esc(phaseName(PHASES[i+1]))} →</button>`:''}
    <button class="btn" data-act="howto">Here's how it works</button>
    <button class="btn" data-act="tv">Toggle big-screen view</button>
+   <button class="btn" data-act="sfxToggle" data-close="1">Sound effects: ${SFX_ON()?'on':'off'}</button>
    ${S.caps.downloads?`<button class="btn" data-act="downloadKit">Download printable kit</button>`:''}
    ${S.store.online?`<p class="small muted center">Join code: <b>${esc(g.code)}</b></p>`:''}
    <button class="btn" data-act="leave">${host?'End game & start over':'Leave game'}</button>
@@ -2808,7 +2839,7 @@ function homeBowSVG(k){
   }
   function snap(svg){
     if(busy)return;busy=true;
-    svg.classList.add('clap');
+    svg.classList.add('clap');setTimeout(()=>SFX.snap(),100);
     setTimeout(()=>{const b=svg.querySelector('.clapbar').getBoundingClientRect();glitter(b.left+b.width*.55,b.top+4,b.width*.8);},110);
     setTimeout(()=>svg.classList.remove('clap'),520);
     setTimeout(()=>{busy=false;},1300);
