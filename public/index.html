@@ -357,6 +357,13 @@ body[data-wrap="photo"] #flakes{display:block}
 .hb-blue{background:#dcebf8;border-color:#2b6f9e}
 .hlinks{margin:14px 0 0;display:flex;gap:8px 18px;justify-content:center;flex-wrap:wrap}
 .hlinks button{background:none;border:0;color:#fff;font:500 15px 'Hanken Grotesk','DM Sans',system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-shadow:0 1px 6px rgba(0,0,0,.7);padding:4px}
+.hpeek{margin:26px 14px 0;padding:16px 18px 18px;border-radius:16px;background:rgba(20,22,24,.58);backdrop-filter:blur(3px);color:#fff;text-align:center}
+.hp-eye{font:600 12px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#f2c6cf}
+.hp-h{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:30px;line-height:1.1;margin:6px 0 8px;color:#fff;text-wrap:balance}
+.hpeek p{font:400 15.5px/1.45 'Hanken Grotesk',system-ui,sans-serif;margin:0 0 14px;text-wrap:pretty}
+.hp-btn b{font-size:28px}
+.sample-plot p{margin:0 0 10px;font-size:15.5px;line-height:1.5}
+.sample-note{margin-top:6px;padding:10px 12px;border-left:4px solid #2e9a4f;background:#eef6ea;border-radius:6px;font-size:14.5px}
 .hcredit{margin:54px 0 0;color:#fff}
 .hcredit div{font-weight:400;font-family:'Cortesia',cursive;font-size:22px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .hcredit img{display:block;width:62%;max-width:260px;height:auto;margin:10px auto 0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
@@ -953,6 +960,9 @@ function vHome(){
     <button class="hbtn hb-yellow" data-act="go" data-to="join"><b>Join a game</b><span>Got a code? Hop in on your phone</span></button>
     <button class="hbtn hb-blue" data-act="goSetup"><b>Make it your own!</b><span>You're the producer</span></button>
   </div>
+  <section class="hpeek"><div class="hp-eye">Sneak peek</div><h2 class="hp-h">Coming Soon to a Living Room Near You</h2>
+   <p>Four random draws, one stolen twist and a shameless pitch. Here's what one movie looks like by the end of the night.</p>
+   <button class="hbtn hb-pink hp-btn" data-act="sample"><b>Read a sample pitch</b></button></section>
   ${saved?`<div class="hlinks"><button data-act="resume">Resume the game in progress</button></div>`:''}
   <footer class="hcredit"><div>An original game from the mind of</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290">${mfLinks()}${mfSupport()}</footer>
   </div>`;
@@ -2348,6 +2358,27 @@ function howtoHTML(tab){
   <div class="htabs">${HOWTO_TABS.map(chip).join('')}</div><div class="hbody">${b}</div>
   <div class="row" style="margin-top:16px">${t!=='tips'?`<button class="btn small" data-act="howto" data-t="${HOWTO_TABS[HOWTO_TABS.findIndex(x=>x[0]===t)+1][0]}">Next: ${HOWTO_TABS[HOWTO_TABS.findIndex(x=>x[0]===t)+1][1]} →</button>`:''}<span class="spacer"></span><button class="btn primary small" data-act="closeModal">Let's play</button></div></div>`;
 }
+
+const SAMPLE={title:'Strings Attached for Christmas',tagline:'She pulls the strings. He grows the trees. Someone stole Grandma’s gingerbread.',
+ who:'Tinsel Frost',career:'Creepy Puppeteer',motive:'The Gingerbread Scandal of 1989',hunk:'The Christmas Tree Farm Owner',flag:'talks to his trees like employees',
+ twist:['You told the whole town his trees are fake.','The dog ate the ham. Then the evidence.','A framed photo of the person who gave it to me.'],
+ plot:['Tinsel Frost is the most feared puppeteer in New York, famous for a marionette Nutcracker that made three critics cry for the wrong reasons. When a telegram reveals Grandma’s prize gingerbread recipe was stolen days before the Christmas Baking Championship, she drives home to Evergreen Falls with nothing but a trunk full of puppets.',
+  'The prime suspect is Beau, the local tree farmer, who has flour on his flannel and calls his spruces “the team.” Tinsel goes undercover and interrogates him through a sock puppet named Detective Cinnamon. It goes poorly. It also goes romantically.',
+  'Seconds before their first kiss, Beau finds out Tinsel told the whole town his trees are fake. He storms off. On Christmas morning the dog eats the ham, then the only evidence. All seems lost, until Tinsel stages a puppet show at the Championship that exposes the real thief: Grandma, who hid the recipe to get Tinsel home for the holidays.',
+  'In the final scene, Tinsel gives Beau a framed photo of herself. He calls it the worst gift he has ever received, then hangs it in the barn where the trees can see it. Snow falls. Roll credits.'],
+ note:'Greenlit. The studio has never wanted a sock-puppet detective spinoff more.'};
+function sampleHTML(){const x=SAMPLE,c=MARCO;
+ const row=(k,v)=>`<div class="ing-row"><dt>${k}</dt><dd>${v}</dd></div>`;
+ return `<div class="sample"><div class="eyebrow">Sample pitch</div>
+ <div class="pitchblock big" style="padding:6px 0 10px;border:0;background:none"><div class="pb-title">${esc(x.title)}</div><div class="pb-tag">${esc(x.tagline)}</div></div>
+ <div class="ingredients"><div class="eyebrow">What fate handed her</div><dl>${row('Starring',esc(x.who))}${row('Holiday calling',esc(x.career))}${row('Coming home because',esc(x.motive))}${row('Falling for',esc(x.hunk)+` <span class="ing-flag">(red flag: ${esc(x.flag)})</span>`)}</dl>
+ <div class="ing-tw"><div class="ing-h">The twist she drew from the hat</div><ul>${c.twistQuestions.map((q,i)=>`<li><span class="ing-q">${esc(q)}</span> ${esc(x.twist[i]||'')}</li>`).join('')}</ul></div></div>
+ <div class="ing-h" style="margin-top:14px">The pitch</div><div class="pb-plot sample-plot">${x.plot.map(t=>`<p>${esc(t)}</p>`).join('')}</div>
+ <div class="sample-note"><b>Studio note:</b> ${esc(x.note)}</div>
+ <p class="small muted" style="margin:10px 0 0">Everyone gets their own random pieces, writes a pitch like this in a few minutes, then performs it. The room votes on the winner.</p>
+ <div class="row" style="margin-top:14px;justify-content:space-between"><button class="link" data-act="closeModal">Close</button><button class="btn primary" data-act="sampleGo">Make your own</button></div></div>`;}
+A.sample=()=>{$('#sheet').classList.add('wide');modal(sampleHTML());const sh=$('#sheet');if(sh)sh.scrollTop=0;};
+A.sampleGo=()=>{closeModal();setTimeout(()=>A.quickMenu(),60);};
 A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML(t));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
 
 /* events */
