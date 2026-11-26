@@ -610,6 +610,23 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .cs-code small{display:block;font-weight:400;font-size:12.5px;margin-top:2px}
 .cs-code span{font:700 32px 'Courier Prime','Courier New',monospace;letter-spacing:.2em;color:#c8322b}
 .cs-note{margin:8px 14px 0;font-size:13px;color:#7a6450}
+.tapcue{display:flex;gap:12px;align-items:flex-start;margin:6px 0 14px;padding:12px 14px;border-radius:12px;background:#1f5240;color:#fbf4e2}
+.tapcue .tc-ic{flex:none;width:34px;height:34px;border-radius:50%;background:#fbf4e2;color:#1f5240;display:grid;place-items:center}.tapcue .tc-ic svg{width:22px;height:22px}
+.tapcue b{display:block;font-size:17px;margin-bottom:2px}.tapcue span{font-size:13.5px;line-height:1.4;opacity:.92}
+.stile{position:relative;padding-bottom:26px}
+.st-go{position:absolute;right:10px;bottom:7px;font-size:12.5px;font-weight:700;color:var(--cran)}
+.stile.pulse{animation:tilepulse 1.1s ease-in-out .5s 2}
+@keyframes tilepulse{0%,100%{box-shadow:0 0 0 0 rgba(200,50,43,0)}50%{box-shadow:0 0 0 5px rgba(200,50,43,.35)}}
+.hjump{position:sticky;top:-2px;z-index:3;margin:0 -2px 8px;padding:6px 0;background:var(--paper)}
+.hjump-btn{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fffaf0;font:600 14px 'Hanken Grotesk',system-ui,sans-serif;color:var(--ink);cursor:pointer}
+.burger{display:inline-flex;flex-direction:column;gap:3px}.burger i{display:block;width:16px;height:2px;border-radius:2px;background:currentColor}
+.hjump-list{position:absolute;left:0;top:calc(100% - 2px);min-width:220px;background:#fffaf0;border:1.5px solid var(--line);border-radius:12px;box-shadow:0 12px 24px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column}
+.hjump-list[hidden]{display:none}
+.hjump-list button{text-align:left;background:none;border:0;padding:10px 12px;border-radius:8px;font:500 15px 'Hanken Grotesk',system-ui,sans-serif;color:var(--ink);cursor:pointer}.hjump-list button:hover{background:#e2ecd9}
+.hsec{padding:6px 0 14px;border-bottom:1.5px dashed var(--line);margin-bottom:12px}.hsec:last-child{border-bottom:0}
+.hsec-h{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:28px;margin:6px 0 8px;color:var(--ink)}
+.hend{text-align:center;padding:10px 0 4px}.hend p{margin:0 0 10px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.stile.pulse{animation:none}}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -2362,7 +2379,8 @@ function setupChangedCount(d){let n=0;if(d.playMode!=='host')n++;if(d.settings.p
 function promptCount(d,k){const c=d.content;return {name:`${c.firstNames.length} first · ${c.lastNames.length} last names`,career:`${c.careers.length} careers`,motive:`${c.motives.length} motives`,hunk:`${c.hunks.length} hunks`,twist:`${c.twistQuestions.length} questions`}[k];}
 const PMODE={marco:["gift","Marco's set"],custom:["pencil","Your own"],ai:["bulb","Suggested for you"]};
 function stile(n,p,r,label,value,meta,changed){
-  return `<button class="stile ${changed?'changed':''}" data-act="pop" data-p="${p}" data-r="${r||''}"><span class="st-top"><span class="st-n">${n}</span><span class="st-lab">${label}</span><span class="st-badge ${changed?'':'def'}">${changed?'Changed':'Default'}</span></span><span class="st-val">${value}</span>${meta?`<span class="st-meta">${meta}</span>`:''}</button>`;}
+  const pulse=n===1&&!S.ui.tilePulsed;if(pulse)setTimeout(()=>{S.ui.tilePulsed=true;},2500);
+  return `<button class="stile ${changed?'changed':''} ${pulse?'pulse':''}" data-act="pop" data-p="${p}" data-r="${r||''}"><span class="st-top"><span class="st-n">${n}</span><span class="st-lab">${label}</span><span class="st-badge ${changed?'':'def'}">${changed?'Changed':'Default'}</span></span><span class="st-val">${value}</span>${meta?`<span class="st-meta">${meta}</span>`:''}<span class="st-go">Change &rsaquo;</span></button>`;}
 
 /* ------------------------------------------------------------------ setup: modes */
 const PLAY_MODES={
@@ -2409,7 +2427,7 @@ function vSetup(){
     :`<button class="btn primary" data-act="createGame" ${S.busy?'disabled':''}>Open the casting call</button>`;
   return `<div class="on-dark" style="padding-top:10px">${backBtn('home')}</div>
   <div class="paper"><div class="eyebrow">Make it your own</div><h2>Customize your game</h2>
-   <p class="muted small" style="margin:4px 0 12px">Everything starts on Marco's version, so you can start right now. Tap anything to change it. Changed tiles get a red outline.</p>
+   <div class="tapcue"><span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-.5V8a1.5 1.5 0 0 1 3 0v2m0-.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.2a6 6 0 0 1-4.9-2.5L3.6 15a1.6 1.6 0 0 1 2.5-2L9 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Tap any tile to change it.</b><span>Everything starts on Marco's version, so you can also skip straight to the button at the bottom. Changed tiles get a red outline.</span></div></div>
    ${head}
    <div class="sg-h">The rounds <span>${m==='solo'?'what’s in each one':'how it’s played · what’s in it'}</span></div>${rounds}
    ${extras.length?`<div class="sg-h">${m==='host'?'The kit':'The finale'}</div><div class="sgrid one">${extras.join('')}</div>`:''}
@@ -2494,22 +2512,21 @@ Weave the inside jokes into about a third of the items. Write ONLY this round's 
 };
 
 /* ------------------------------------------------------------------ how it works */
-const HOWTO_TABS=[['gist','The gist'],['rounds','Rounds'],['supplies','Supplies'],['players','Players & time'],['tips','Host tips']];
-function howtoHTML(tab){
-  const t=tab||'gist';
-  const chip=([k,l])=>`<button class="htab ${k===t?'on':''}" data-act="howto" data-t="${k}">${l}</button>`;
+const HOWTO_TABS=[['gist','The gist'],['rounds','The rounds'],['supplies','What you need'],['players','How many players'],['tips','Host tips & FAQ']];
+function howtoSection(t){
   const row=(icon,title,body)=>`<div class="hrow"><div class="hico">${icon}</div><div><b>${title}</b><div class="small">${body}</div></div></div>`;
   let b='';
   if(t==='gist'){b=`
     <p class="hlead">Everyone builds a gloriously terrible made-for-TV Christmas movie, one random piece at a time. Then you pitch it to "the executives" (everyone else) and vote on which one gets greenlit.</p>
     <div class="hflow">${['Name','Job','Crisis','Hunk','Twist','Pitch','Vote'].map(x=>`<span>${x}</span>`).join('<i>→</i>')}</div>
     <h4>Pick a version</h4>
-    ${row(ic('gift'),"Marco's version",'The original game, ready to go. Classic cheesy names, jobs, crises and hunks.')}
-    ${row(ic('pencil'),'Make your own','Rewrite every list with your group\'s inside jokes. Save it and reuse it next year.')}
-    ${row(ic('bulb'),'Suggest for me','Tell Claude about your crew and your props; it writes a custom game. You edit before playing.')}
+    ${row(ic('gift'),"Marco's version",'The original game, ready to go. Classic cheesy names, jobs, crises and hunks. Start it from Quick play.')}
+    ${row(ic('pencil'),'Make your own','Rewrite every list with your group\'s inside jokes and pick how each round is played. Save it and reuse it next year.')}
     <h4>Pick how you play</h4>
-    ${row(ic('mic'),'Host-led party','You run the room with the printable host kit: script, charts, cut-out cards, slips, name tags and ballots. Players just need a pen. Best for a living room with props.')}
-    ${row(ic('phone'),'Play-along on phones','The app handles every roll, reveal, secret slip and vote. Pass one phone around, or have friends join on their own phones'+(S.web?' with a 4-letter code. No accounts needed.':' (they need to be signed in to Claude and invited to this page as Editors).'))}
+    ${row(ic('clapper'),'Solo','Just you. Roll a heroine, draw a twist the studio wrote for you, then pitch your movie to a very picky network. In Quick play.')}
+    ${row(ic('phone'),'Pass one device around','One phone or laptop runs the game: rolls, reveals, secret slips and votes. Pass it around. No accounts.')}
+    ${row(ic('people'),'Everyone on their own phone','Friends join'+(S.web?' with a 4-letter code. No accounts needed.':' this page (they need to be signed in to Claude and invited as Editors).')+' Secret twists stay secret.')}
+    ${row(ic('mic'),'Print it, no screens','Download the host kit: script, charts, cut-out cards, slips, name tags and ballots. Bring real dice and props, and players just need a pen.')}
     <p class="small muted">Mix and match: plenty of hosts print the kit <i>and</i> keep the app on a TV for timers and reveals.</p>`;}
   if(t==='rounds'){const R=[
     ['dice','Round 1 · Your Name','Roll for a festive first and last name. Write it on your name tag and commit to the bit.','Two dice','Split-flap name sign','~5 min'],
@@ -2546,16 +2563,22 @@ function howtoHTML(tab){
     <li><b>Twist slips: be specific.</b> "My sister's ex at Applebee's" beats "a bad date." Use Suggest only if truly stuck.</li>
     <li><b>Pitch rules:</b> every detail from your slip must appear. Bonus points for a dramatic pause, a fake commercial break, or a "previously on…"</li>
     <li><b>Let the executives heckle.</b> Follow-up questions like "And where is the dolphin during the kiss?" are fair game.</li>
-    <li><b>Make the poster.</b> After the vote, anyone can generate a movie poster for their film. Screenshot it for the group chat.</li>
+    <li><b>Send in the classic.</b> After the vote, submit the best pitch to the Hall of Fame${S.web?'':' (on blankforchristmas.com)'}.</li>
     <li><b>Prizes:</b> the winner gets greenlit. Last place gets a sequel.</li></ul>
     <h4>Quick FAQ</h4>
     <div class="faq"><b>Do we need accounts?</b><span>Only if friends join on their own phones. One shared device or the printed kit needs nothing.</span>
     <b>Can we save our version?</b><span>Yes. Custom setups save on this device, and you can copy a setup to share it.</span>
-    <b>Does it use AI?</b><span>Only if you choose it: "Suggest for me," some suggestions, and movie posters. Marco's version and your own version are all human.</span>
+    <b>Does it use AI?</b><span>No. Every name, job, crisis, hunk and twist was written by people (Marco, mostly). The only machine in the room is your phone's own dictation, if you tap "Say it out loud."</span>
     <b>Someone left mid-game?</b><span>The host can skip rounds or remove players from the menu.</span></div>`;}
+  return b;
+}
+function howtoHTML(){
+  const secs=HOWTO_TABS.map(([k,l])=>`<section class="hsec" id="hs-${k}"><h3 class="hsec-h">${l}</h3>${howtoSection(k)}</section>`).join('');
   return `<div class="howto"><div class="row" style="align-items:flex-start;flex-wrap:nowrap"><div><div class="eyebrow">Here's how it works</div><h2 class="reveal-title" style="margin:2px 0 10px">Blank for Christmas</h2></div><span class="spacer"></span><button class="link" data-act="closeModal" aria-label="Close" style="text-decoration:none">${ic('x')}</button></div>
-  <div class="htabs">${HOWTO_TABS.map(chip).join('')}</div><div class="hbody">${b}</div>
-  <div class="row" style="margin-top:16px">${t!=='tips'?`<button class="btn small" data-act="howto" data-t="${HOWTO_TABS[HOWTO_TABS.findIndex(x=>x[0]===t)+1][0]}">Next: ${HOWTO_TABS[HOWTO_TABS.findIndex(x=>x[0]===t)+1][1]} →</button>`:''}<span class="spacer"></span><button class="btn primary small" data-act="closeModal">Let's play</button></div></div>`;
+  <div class="hjump"><button class="hjump-btn" data-act="hjumpToggle" aria-expanded="false" aria-controls="hjumpList"><span class="burger" aria-hidden="true"><i></i><i></i><i></i></span>Jump to a section</button>
+   <div class="hjump-list" id="hjumpList" hidden>${HOWTO_TABS.map(([k,l])=>`<button data-act="hjump" data-t="${k}">${l}</button>`).join('')}</div></div>
+  <div class="hbody">${secs}</div>
+  <div class="hend"><p>That's the whole show. Grab some cocoa.</p><button class="btn primary" data-act="closeModal">Let's play</button></div></div>`;
 }
 
 const SAMPLE={title:'Strings Attached for Christmas',tagline:'She pulls the strings. He grows the trees. Someone stole Grandma’s gingerbread.',
@@ -2691,7 +2714,10 @@ function tvShow(i){S.ui.tvFrame=i;
 A.tvTap=()=>{const i=S.ui.tvFrame||0;if(i>=CREDITS.length-1)return A.tvGo();tvShow(i+1);};
 A.tvBack=()=>{const i=S.ui.tvFrame||0;if(i>0)tvShow(i-1);};
 A.tvGo=()=>{if(!S.game||S.game.phase!=='intro')return;A.advance({dataset:{to:'name'}});};
-A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML(t));const sh=$('#sheet');if(sh)sh.scrollTop=0;};
+A.howto=el=>{const t=el&&el.dataset?el.dataset.t:null;$('#sheet').classList.add('wide');modal(howtoHTML());const sh=$('#sheet');if(sh)sh.scrollTop=0;if(t)setTimeout(()=>A.hjump({dataset:{t}}),30);};
+A.hjumpToggle=el=>{const l=$('#hjumpList');if(!l)return;const open=l.hidden;l.hidden=!open;el.setAttribute('aria-expanded',String(open));};
+A.hjump=el=>{const sh=$('#sheet'),sec=document.getElementById('hs-'+el.dataset.t);const l=$('#hjumpList');if(l){l.hidden=true;const b=document.querySelector('.hjump-btn');if(b)b.setAttribute('aria-expanded','false');}
+  if(sh&&sec){const jb=document.querySelector('.hjump');const off=(jb?jb.offsetHeight:50)+14;const top=sec.getBoundingClientRect().top-sh.getBoundingClientRect().top+sh.scrollTop-off;sh.scrollTo({top,behavior:'smooth'});}};
 
 /* events */
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;if(el.type==='checkbox'||el.type==='radio'){A[el.dataset.act]&&A[el.dataset.act](el,e);return;}e.preventDefault();const f=A[el.dataset.act];if(f)f(el,e);});
