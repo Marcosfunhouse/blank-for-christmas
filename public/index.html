@@ -628,6 +628,10 @@ details.sec>summary{font-family:'Cortesia',cursive;font-weight:400;font-size:22p
 .hend{text-align:center;padding:10px 0 4px}.hend p{margin:0 0 10px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.stile.pulse{animation:none}}
 .hchap{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}.hchap li{display:flex;gap:12px;align-items:flex-start}.hchap .hico{flex:none}
+.sym-job{display:grid;place-items:center;width:100%;height:100%;background:#fdf5db;color:#1f5240;border-radius:8px}.sym-job svg{width:62%;height:62%}
+.sc-cell .sym-job,.sc-cell .sym-num{position:absolute;inset:8%;width:84%;height:84%;pointer-events:none}
+.sym-num{display:grid;place-items:center;width:100%;height:100%;font:400 34px 'Redbell','Cortesia',cursive}
+.ad-in.pixd{padding:0;overflow:hidden}.ad-in.pixd img{width:100%;height:100%;display:block;image-rendering:pixelated}
 .pix{image-rendering:pixelated;image-rendering:crisp-edges}
 .hunk-portrait{display:block;width:120px;height:120px;margin:12px auto 4px;border-radius:12px;border:3px solid var(--ink,#1d1d1f);box-shadow:0 6px 14px rgba(0,0,0,.2)}
 .topbar+.round-head,.topbar+.winner{margin-top:112px}
@@ -903,12 +907,12 @@ const PRESETS={
   digitalDice:{label:'Digital dice',icon:'dice',kind:'random',style:'dice',prop:null,instr:'Tap to roll. First roll is your first name, second roll your last.'},
   realDice:{label:'Roll real dice',icon:'dice',kind:'choose',style:'dice',prop:'Two dice',instr:'Roll two dice and add them up: that number is your first name. Roll again for your last. Tap your numbers.'},
   cardRace:{label:'Four-of-a-kind card race',icon:'cards',kind:'choose',style:'cards',prop:'A deck of cards',instr:'Pull four of each rank from a deck, one rank per player (A, K, Q, J...). Deal everyone four cards. On your turn draw one, then secretly pass one face-down to your left. Always end with four. Go fast! First to four of a kind slams them down and taps their rank to claim that career.'},
-  adventMatch:{label:'Advent calendar match',icon:'gift',kind:'random',style:'advent',prop:null,instr:'Open two doors and match the pictures. Make a match and the studio draws your calling at random. Three tries, then the studio picks for you anyway.'},
+  adventMatch:{label:'Meet your match',icon:'gift',kind:'random',style:'advent',prop:null,instr:'An advent calendar full of hunks. Open two doors at a time. Find two of the same man and he\'s yours.'},
   digitalDeal:{label:'Deal a digital card',icon:'cards',kind:'random',style:'cards',prop:null,instr:'Tap to be dealt a card. Your rank is your calling.'},
   realVillage:{label:'Pick a real house',icon:'house',kind:'choose',style:'houses',prop:'A Christmas village or decorations',instr:"Label the houses in your Christmas village (or any decorations around the room) with these names or numbers. Walk up, choose the one that calls to your soul, then tap it. Will this be where you meet the man of your dreams?"},
   mysteryHouses:{label:'Mystery cottages on screen',icon:'house',kind:'choose',style:'houses',prop:null,instr:'Choose a cottage. Its secret is your reason for coming home. The studio reshuffles which secret hides where every game.'},
   beerPong:{label:'Ping pong cup toss',icon:'cup',kind:'choose',style:'cups',prop:'Solo cups + ping pong balls',instr:'Set the cups up in a triangle and number them. Take your shot! Whatever cup you sink is your destined love interest. Tap it. Once he\'s chosen, he\'s off the market.'},
-  digitalScratch:{label:'Scratch-off ticket',icon:'ticket',kind:'random',style:'scratch',prop:null,instr:'Scratch the 8 spots. Match three of the same face and you win yourself a man.'},
+  digitalScratch:{label:'Discover your destiny',icon:'ticket',kind:'random',style:'scratch',prop:null,instr:'A scratch-off ticket. Scratch the 8 spots. Match three of the same job and that\'s your calling.'},
   digitalToss:{label:'Digital cup toss',icon:'cup',kind:'random',style:'cups',prop:null,instr:'Tap to toss the ball. Wherever it lands is your destiny.'},
   wheel:{label:'Spin the wheel',icon:'wheel',kind:'random',style:'wheel',prop:null,instr:'Tap to spin. Fate decides.'},
   pullCard:{label:'Pull a real card',icon:'cards',kind:'choose',style:'cards',prop:'A deck of cards',instr:'Shuffle one card of each career rank (A, K, Q, J…) face-down. Each player pulls one at random and taps it below.'},
@@ -919,20 +923,20 @@ const PRESETS={
 };
 const ROUND_PRESETS={
   name:['realDice','nameWheel','digitalDice','drawSlip','wheel','custom'],
-  career:['cardRace','pullCard','adventMatch','digitalDeal','drawSlip','wheel','custom'],
+  career:['cardRace','pullCard','digitalScratch','digitalDeal','drawSlip','wheel','custom'],
   motive:['realVillage','mysteryHouses','drawSlip','wheel','custom'],
-  hunk:['beerPong','digitalScratch','digitalToss','drawSlip','wheel','custom'],
+  hunk:['beerPong','adventMatch','digitalToss','drawSlip','wheel','custom'],
   twist:['digitalHat','paperHat']
 };
 const PROPS_MECH={name:'realDice',career:'cardRace',motive:'realVillage',hunk:'beerPong',twist:'digitalHat'};
-const DIGITAL_MECH={name:'nameWheel',career:'adventMatch',motive:'mysteryHouses',hunk:'digitalScratch',twist:'digitalHat'};
+const DIGITAL_MECH={name:'nameWheel',career:'digitalScratch',motive:'mysteryHouses',hunk:'adventMatch',twist:'digitalHat'};
 
 const ROUNDS={
   name:{n:1,title:'Your Holiday Movie Identity',blurb:"You can't star in a holiday movie without the perfect festive name. Fate picks your first name and your last. Embrace your cheerful new persona."},
   career:{n:2,title:'Secure Your Holiday Calling',blurb:'Every holiday-movie hero has a charming, often struggling career that pulls them back to their hometown. Is it your true calling, or the very career you fled the big city to escape?'},
   motive:{n:3,title:'Your Christmas Motive',blurb:'No holiday story is complete without an urgent, heartwarming and slightly dramatic reason to come home.'},
   hunk:{n:4,title:'Meet Your Holiday Hunk',blurb:"Time to find the flannel-wearing, kind-hearted man who'll make you believe in the magic of Christmas again. Once he's chosen, he's off the market."},
-  twist:{n:5,title:'The Climactic Christmas Twist',blurb:"Every holiday movie needs drama before the happy ending. Answer three questions in secret. They all go in the hat, and you'll draw someone else's slip."}
+  twist:{n:5,title:'A Christmas Twist',blurb:"Every holiday movie needs drama before the happy ending. Answer three questions in secret. They all go in the hat, and you'll draw someone else's slip."}
 };
 const PHASES=['lobby','intro','name','career','motive','hunk','twist','prep','pitch','vote','results'];
 const ROUND_KEYS=['name','career','motive','hunk'];
@@ -1321,11 +1325,11 @@ function vPicker(key,p){
   const items=itemsFor(key);const taken=takenMap(key,p.id);
   if(m.kind==='random'&&m.style==='scratch'){
     const avail=items.filter(it=>!taken[it.i]).length;
-    return `<div class="paper">${head}${avail?scratchTicketHTML(p.id,key):'<p class="small muted">No one left on the market!</p>'}</div>`;
+    return `<div class="paper">${head}${avail?scratchTicketHTML(p.id,key):`<p class="small muted">${key==='career'?'Every job is taken!':'No one left on the market!'}</p>`}</div>`;
   }
   if(m.kind==='random'&&m.style==='advent'){
     const avail=items.filter(it=>!taken[it.i]).length;
-    return `<div class="paper">${head}${avail?adventHTML(p.id,key):'<p class="small muted">Every job is taken!</p>'}</div>`;
+    return `<div class="paper">${head}${avail?adventHTML(p.id,key):`<p class="small muted">${key==='hunk'?'No one left on the market!':'Every job is taken!'}</p>`}</div>`;
   }
   if(m.kind==='random'){
     const avail=items.filter(it=>!taken[it.i]).length;
@@ -1738,18 +1742,25 @@ function jobIconKey(title,i){const t=String(title||'').toLowerCase();const rules
   for(const [re,k] of rules)if(re.test(t))return k;const pool=['star','bell','tree','ornament','gift','briefcase','mitten','snowman'];return pool[i%pool.length];}
 function jobIcon(k){return `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${JOB_ICONS[k]||''}</svg>`;}
 const ADVENT_SYMBOLS=['star','bell','tree','ornament','gift','mitten','snowman','candy'];
-function newAdvent(pid,key){const tk=takenMap(key,pid);const avail=itemsFor(key).filter(it=>!tk[it.i]).length;const k=Math.min(6,Math.max(1,avail));
-  const syms=shuffle(ADVENT_SYMBOLS).slice(0,k);const doors=[];syms.forEach(sym=>{doors.push({t:'sym',sym},{t:'sym',sym});});while(doors.length<12)doors.push({t:'coal'});
+function symArt(key,i){if(key==='hunk')return `<img src="${hunkPix(i)}" alt="" draggable="false" class="pix">`;
+  if(key==='career'){const c=C();return `<span class="sym-job">${jobIcon(jobIconKey(c.careers[i],i))}</span>`;}
+  return `<span class="sym-num">${i+1}</span>`;}
+function symLook(key,i){const c=C();if(key==='hunk')return 'h'+hunkPixIdx(c.hunks[i],i);if(key==='career')return 'j'+jobIconKey(c.careers[i],i);return 'n'+i;}
+const unlimitedTries=()=>!!(S.game&&S.game.solo);
+function newAdvent(pid,key){const tk=takenMap(key,pid);const availIdx=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);const k=Math.min(6,Math.max(1,availIdx.length));const doors=[];
+  if(key==='hunk'){const seen=new Set();const pick=[];shuffle(availIdx).forEach(i=>{const L=symLook(key,i);if(pick.length<6&&!seen.has(L)){seen.add(L);pick.push(i);}});pick.forEach(i=>{doors.push({t:'item',i},{t:'item',i});});}
+  else{const syms=shuffle(ADVENT_SYMBOLS).slice(0,k);syms.forEach(sym=>{doors.push({t:'sym',sym},{t:'sym',sym});});}
+  while(doors.length<12)doors.push({t:'coal'});
   const nums=shuffle(Array.from({length:24},(_,i)=>i+1)).slice(0,12);
-  return {doors:shuffle(doors),nums,open:Array(12).fill(0),matched:Array(12).fill(0),tries:3,first:null,busy:false,done:false,msg:'Open two doors. Find a match.'};}
+  return {doors:shuffle(doors),nums,open:Array(12).fill(0),matched:Array(12).fill(0),tries:3,first:null,busy:false,done:false,msg:key==='hunk'?'Open two doors. Find two of the same man.':'Open two doors. Find a match.'};}
 function adventFor(pid,key){S.ui.advent=S.ui.advent||{};return S.ui.advent[pid]||(S.ui.advent[pid]=newAdvent(pid,key));}
 function adventHTML(pid,key){const a=adventFor(pid,key);const c=C();
-  const door=(d,j)=>{const isOpen=a.open[j]||a.matched[j];const ik=d.t==='coal'?'coal':d.sym;
+  const door=(d,j)=>{const isOpen=a.open[j]||a.matched[j];const art=d.t==='item'?symArt(key,d.i):jobIcon(d.t==='coal'?'coal':d.sym);
     return `<button class="adoor ${isOpen?'open':''} ${a.matched[j]?'hit':''} ${d.t==='coal'?'coal':''} c${j%4}" data-act="openDoor" data-id="${pid}" data-key="${key}" data-d="${j}" ${a.done||a.busy?'disabled':''} aria-label="Door ${a.nums[j]}">
-      <span class="ad-in">${jobIcon(ik)}</span><span class="ad-door"><span class="ad-num">${a.nums[j]}</span><span class="ad-knob"></span></span></button>`;};
-  return `<div class="advent" data-id="${pid}"><div class="adv-head"><span class="adv-title">Your Calling</span><span class="adv-sub">Advent calendar · match two doors</span></div>
+      <span class="ad-in ${d.t==='item'?'pixd':''}">${art}</span><span class="ad-door"><span class="ad-num">${a.nums[j]}</span><span class="ad-knob"></span></span></button>`;};
+  return `<div class="advent" data-id="${pid}"><div class="adv-head"><span class="adv-title">${key==='hunk'?'Meet Your Match':'Your Calling'}</span><span class="adv-sub">Advent calendar · match two doors</span></div>
    <div class="adv-grid">${a.doors.map(door).join('')}</div>
-   <div class="adv-foot"><span id="advMsg">${esc(a.msg)}</span><span class="adv-tries" aria-label="${a.tries} tries left">${[0,1,2].map(k=>`<i class="${k<a.tries?'on':''}"></i>`).join('')}</span></div></div>`;}
+   <div class="adv-foot"><span id="advMsg">${esc(a.msg)}</span>${unlimitedTries()?'':`<span class="adv-tries" aria-label="${a.tries} tries left">${[0,1,2].map(k=>`<i class="${k<a.tries?'on':''}"></i>`).join('')}</span>`}</div></div>`;}
 function adventRefresh(pid,key){const el=document.querySelector(`.advent[data-id="${pid}"]`);if(!el)return;const a=adventFor(pid,key);
   el.querySelectorAll('.adoor').forEach((b,j)=>{b.classList.toggle('open',!!(a.open[j]||a.matched[j]));b.classList.toggle('hit',!!a.matched[j]);b.disabled=!!(a.done||a.busy);});
   const m=el.querySelector('#advMsg');if(m)m.textContent=a.msg;el.querySelectorAll('.adv-tries i').forEach((i,k)=>i.classList.toggle('on',k<a.tries));}
@@ -1757,12 +1768,15 @@ A.openDoor=async el=>{const pid=el.dataset.id,key=el.dataset.key,j=+el.dataset.d
   if(a.done||a.busy||a.open[j]||a.matched[j])return;a.open[j]=1;flapTick();
   if(a.first===null){a.first=j;a.msg='Now open another…';adventRefresh(pid,key);return;}
   const f=a.first;a.first=null;a.busy=true;const d1=a.doors[f],d2=a.doors[j];
-  const same=d1.t===d2.t&&(d1.t==='coal'||d1.sym===d2.sym);
+  const same=d1.t===d2.t&&(d1.t==='coal'||(d1.t==='sym'&&d1.sym===d2.sym)||(d1.t==='item'&&d1.i===d2.i));
+  if(same&&d1.t==='item'){a.matched[f]=a.matched[j]=1;a.done=true;a.msg="It's a match! Meet your man…";adventRefresh(pid,key);chime();
+    await sleep(1400);const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];
+    if(pool.length)await commit(key,pid,pool.includes(d1.i)?d1.i:pool[Math.floor(Math.random()*pool.length)]);return;}
   if(same&&d1.t==='sym'){a.matched[f]=a.matched[j]=1;a.done=true;a.msg="It's a match! The studio is drawing your calling…";adventRefresh(pid,key);chime();
     await sleep(1400);const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];if(pool.length)await commit(key,pid,pool[Math.floor(Math.random()*pool.length)]);return;}
-  a.tries--;a.msg=same?'Two lumps of coal. Ho ho no.':(a.tries?'No match. Close them up and try again.':'Out of tries!');adventRefresh(pid,key);
+  if(!unlimitedTries())a.tries--;a.msg=same?'Two lumps of coal. Ho ho no.':(a.tries>0?'No match. Close them up and try again.':'Out of tries!');adventRefresh(pid,key);
   await sleep(same?1500:1100);a.open[f]=a.open[j]=0;a.busy=false;
-  if(a.tries<=0){a.done=true;a.msg='The studio assigned you a job…';adventRefresh(pid,key);await sleep(1300);
+  if(a.tries<=0&&!unlimitedTries()){a.done=true;a.msg=key==='hunk'?'Out of tries. The studio set you up…':'The studio assigned you a job…';adventRefresh(pid,key);await sleep(1300);
     const tk=takenMap(key,pid);const pool=itemsFor(key).filter(it=>!tk[it.i]).map(it=>it.i);if(S.ui.advent)delete S.ui.advent[pid];if(pool.length)await commit(key,pid,pool[Math.floor(Math.random()*pool.length)]);return;}
   adventRefresh(pid,key);};
 /* ---------- scratch-off ticket (digital hunk pick) ---------- */
@@ -1773,15 +1787,16 @@ function hunkPixIdx(h,i){const t=String((h&&h.title)||'').toLowerCase();const ke
 function hunkPix(i){const c=S.game?C():MARCO;return HUNK_PIX[hunkPixIdx(c.hunks[i],i)];}
 function newTicket(pid,key){key=key||'hunk';const all=itemsFor(key).map(it=>it.i);const tk=takenMap(key,pid);const avail=all.filter(i=>!tk[i]);
   const w=(avail.length?avail:all)[Math.floor(Math.random()*(avail.length||all.length))];
-  const others=shuffle(all.filter(i=>i!==w&&hunkPixIdx(C().hunks[i],i)!==hunkPixIdx(C().hunks[w],w)));const pad=k=>others[k]!=null?others[k]:shuffle(all.filter(i=>i!==w))[0];
+  const seen=new Set([symLook(key,w)]);const others=[];shuffle(all.filter(i=>i!==w)).forEach(i=>{const L=symLook(key,i);if(!seen.has(L)){seen.add(L);others.push(i);}});const pad=k=>others[k]!=null?others[k]:shuffle(all.filter(i=>i!==w))[0];
   const a=pad(0),b=pad(1),c=pad(2);
   return {layout:shuffle([w,w,w,a,a,b,b,c]),win:w,cleared:Array(8).fill(0),strokes:Array.from({length:8},()=>[]),won:false};}
 function ticketFor(pid,key){S.ui.scratch=S.ui.scratch||{};return S.ui.scratch[pid]||(S.ui.scratch[pid]=newTicket(pid,key));}
+const scWin=key=>key==='career'?'Three of a kind! Your destiny awaits…':'Three of a kind! Meet your man…';
 function scratchTicketHTML(pid,key){const t=ticketFor(pid,key);
   return `<div class="sc-ticket ${t.won?'won':''}" data-id="${pid}" data-key="${key}">
-   <div class="sc-head"><span class="sc-brand">Holiday Hunk</span><span class="sc-sub">Scratch-off · Match 3 to win a man</span></div>
-   <div class="sc-grid">${t.layout.map((a,i)=>`<div class="sc-cell ${t.cleared[i]?'clear':''} ${t.won&&a===t.win&&t.cleared[i]?'hit':''}" data-i="${i}" tabindex="0" role="button" aria-label="Scratch spot ${i+1}"><img src="${hunkPix(a)}" alt="" draggable="false" class="pix"><canvas></canvas></div>`).join('')}</div>
-   <div class="sc-foot"><span id="scMsg">${t.won?'Three of a kind! Meet your man…':'Scratch with your finger or mouse'}</span><button class="link" data-act="scratchAll" data-id="${pid}">${t.won?'':'Reveal for me'}</button></div></div>`;}
+   <div class="sc-head"><span class="sc-brand">${key==='career'?'Discover Your Destiny':'Holiday Hunk'}</span><span class="sc-sub">${key==='career'?'Scratch-off · Match 3 to find your calling':'Scratch-off · Match 3 to win a man'}</span></div>
+   <div class="sc-grid">${t.layout.map((a,i)=>`<div class="sc-cell ${t.cleared[i]?'clear':''} ${t.won&&a===t.win&&t.cleared[i]?'hit':''}" data-i="${i}" tabindex="0" role="button" aria-label="Scratch spot ${i+1}">${symArt(key,a)}<canvas></canvas></div>`).join('')}</div>
+   <div class="sc-foot"><span id="scMsg">${t.won?scWin(key):'Scratch with your finger or mouse'}</span><button class="link" data-act="scratchAll" data-id="${pid}">${t.won?'':'Reveal for me'}</button></div></div>`;}
 function drawFoil(cv){const ctx=cv.getContext('2d');const w=cv.width,h=cv.height;
   const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#cfd3d8');g.addColorStop(.35,'#f4f5f7');g.addColorStop(.55,'#b8bdc4');g.addColorStop(1,'#e6e8eb');
   ctx.globalCompositeOperation='source-over';ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
@@ -1811,7 +1826,7 @@ function revealCell(pid,key,i,cell){const t=ticketFor(pid);if(t.cleared[i]||t.wo
   const msg=document.getElementById('scMsg');
   if(hits.length>=3){t.won=true;const tk=cell.closest('.sc-ticket');if(tk)tk.classList.add('won');
     hits.forEach(j=>{const c=tk&&tk.querySelector(`.sc-cell[data-i="${j}"]`);if(c)c.classList.add('hit');});
-    if(msg)msg.textContent='Three of a kind! Meet your man…';const ra=tk&&tk.querySelector('[data-act="scratchAll"]');if(ra)ra.textContent='';
+    if(msg)msg.textContent=scWin(key);const ra=tk&&tk.querySelector('[data-act="scratchAll"]');if(ra)ra.textContent='';
     chime&&chime();setTimeout(()=>winHunk(pid,key),1300);}
   else if(msg){const pair=t.layout.some((a,j)=>t.layout.filter((b,k)=>b===a&&t.cleared[k]).length===2);msg.textContent=pair?'Two of a kind… keep scratching!':'Keep scratching!';}
 }
