@@ -34,7 +34,7 @@ enabled = true
 
 # ---- Settings you can change in the Cloudflare dashboard (Settings > Variables) ----
 [vars]
-AI_ENABLED = "true"            # "false" turns every AI button off; the game still works
+AI_ENABLED = "false"           # "false" turns every AI button off; the game still works
 MODEL_QUICK = "claude-haiku-5-5"   # one-line suggestions
 MODEL_DEFAULT = "claude-haiku-5-5" # whole-game writing and posters
 AI_ROOM_LIMIT = "60"           # AI calls allowed per game room

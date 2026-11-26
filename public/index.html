@@ -315,7 +315,7 @@ body.tv .pitchblock.big .pb-title{font-size:44px}body.tv .pitchblock.big .pb-plo
 .st-meta{font-size:12px;color:var(--muted);line-height:1.25}
 .sround{border:1.5px dashed var(--line);border-radius:14px;padding:10px;margin:10px 0;background:var(--cream)}
 .sr-title{font-weight:400;font-family:'Cortesia',cursive;font-size:16px;margin:0 0 8px 2px}.sr-ch{font-family:'Hanken Grotesk';font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cran);font-weight:800;margin-right:8px}
-.pmodes{display:grid;gap:8px;grid-template-columns:repeat(3,1fr);margin-bottom:10px}.pmodes .choice{margin:0;padding:10px}.pmodes .choice b{font-size:15px}
+.pmodes{display:grid;gap:8px;grid-template-columns:repeat(3,1fr);margin-bottom:10px}.pmodes.two{grid-template-columns:repeat(2,1fr)}.pmodes .choice{margin:0;padding:10px}.pmodes .choice b{font-size:15px}
 @media (max-width:480px){.pmodes{grid-template-columns:1fr}}
 .pprev{margin:6px 0 8px;padding-left:18px;font-size:13.5px}.pprev li{margin:2px 0}
 
@@ -703,6 +703,7 @@ figure.aud figcaption{font-size:13px;color:var(--muted);margin-top:2px}
 <div id="toast"></div>
 <script>
 "use strict";
+const AI_FEATURES=false; // the game is fully hand-made; flip to true to bring the AI tools back
 /* ------------------------------------------------------------------ data */
 const RANKS=['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
 const SUITS=['♥','♠','♦','♣'];
@@ -907,7 +908,7 @@ function render(){
     switch(S.view){
       case 'home':h=vHome();break;
       case 'version':h=vVersion();break;
-      case 'ai':h=vAI();break;
+      case 'ai':h=S.caps.sample?vAI():vHome();break;
       case 'editor':h=vEditor();break;
       case 'rounds':h=vRounds();break;
       case 'setup':h=vSetup();break;
@@ -985,7 +986,7 @@ function vVersion(){
   <div class="paper"><div class="eyebrow">Step 1 of 3</div><h2>Pick your version</h2><p class="muted">You can edit everything later.</p>
     <button class="choice" data-act="pickVersion" data-v="marco"><b>Marco's version</b>The original party game, cleaned up for any crowd: real dice, a card race, the Christmas village and beer pong, with digital backups for each.</button>
     <button class="choice" data-act="pickVersion" data-v="custom"><b>Make your own</b>Start from Marco's version and rewrite every name, job, crisis and hunk with your group's inside jokes.</button>
-    <button class="choice" data-act="pickVersion" data-v="ai" ${ai?'':'disabled'}><b>Suggest options for me</b>Tell Claude about your group, your inside jokes and the props you have. It writes a custom game, picks how each round gets randomized, and you tweak from there.${ai?'':'<br><span class="small">(Not available in this view.)</span>'}</button>
+    ${ai?`<button class="choice" data-act="pickVersion" data-v="ai"><b>Suggest options for me</b>Tell Claude about your group, your inside jokes and the props you have. It writes a custom game, picks how each round gets randomized, and you tweak from there.</button>`:''}
     <p class="small center"><button class="link" data-act="howto">Here's how it works</button> · <button class="link" data-act="go" data-to="import">Load a saved setup</button></p>
   </div>`;
 }
@@ -1017,7 +1018,7 @@ function vEditor(){
   const op=id=>(S.ui.open||(S.ui.open={intro:true}))[id]?'open':'';
   const ta=(key,label,hint)=>`<details class="sec" data-sec="${key}" ${op(key)}><summary>${label} <span class="tag" style="margin-left:8px">${c[key].length}</span></summary><div class="body"><p class="small muted">${hint}</p><div style="margin:-4px 0 8px">${sugBtn(`data-kind="list" data-list="${key}"`,'Add a suggestion')}</div><textarea class="t" rows="8" data-k="list.${key}" data-list="${key}">${esc(c[key].join('\n'))}</textarea></div></details>`;
   return `<div class="on-dark" style="padding-top:10px">${backBtn('version')}</div>
-  <div class="paper"><div class="eyebrow">Step 2 of 3 · ${d.version==='ai'?'Claude\'s draft':'Your version'}</div><h2>Write your holiday movie universe</h2>
+  <div class="paper"><div class="eyebrow">Step 2 of 3 · ${d.version==='ai'&&S.caps.sample?'Claude\'s draft':'Your version'}</div><h2>Write your holiday movie universe</h2>
   <p class="muted small">${d.version==='ai'?'Claude drafted this from what you told it. Keep what lands, rewrite what doesn\'t.':'Swap in your own names, jobs, crises and hunks. Inside jokes encouraged.'} Order doesn't matter.</p>
   <details class="sec" data-sec="intro" ${op('intro')}><summary>Opening narration</summary><div class="body">
     <label class="f">Game title</label><input class="t" data-k="title" data-bind="draft.content.title" value="${esc(c.title)}">
@@ -1685,7 +1686,8 @@ A.scratchAll=async el=>{const pid=el.dataset.id;const t=ticketFor(pid);const tk=
 A.pickVersion=el=>{const v=el.dataset.v;
   if(v==='marco'){S.draft=newDraft('marco');S.view='rounds';}
   else if(v==='custom'){S.draft=newDraft('custom');S.view='editor';}
-  else{S.view='ai';}
+  else if(S.caps.sample){S.view='ai';}
+  else{S.draft=newDraft('custom');S.view='editor';}
   render();window.scrollTo(0,0);};
 A.aiProp=el=>{S.ui.ai.props[el.dataset.p]=el.checked;};
 A.addItem=el=>{const l=el.dataset.list;S.draft.content[l].push(l==='motives'?{place:'',title:'',text:''}:{title:'',backstory:'',vibe:'',line:'',redflag:'',verdict:''});render();};
@@ -2257,8 +2259,8 @@ function popHTML(){
       if(cur==='custom')body+=`<label class="f">Your instructions ${sugBtn(`data-kind="text" data-bank="challenge" data-path="draft.custom.${r.k}"`)}</label><textarea class="t" rows="3" data-k="cus${r.k}" data-bind="draft.custom.${r.k}" placeholder="e.g. Find a numbered ornament hidden somewhere in the room. Tap the number you found.">${esc(d.custom[r.k]||'')}</textarea>`;}
     body+=`<label class="f">Host cue <span class="muted small">(optional stage direction or inside joke)</span> ${sugBtn(`data-kind="text" data-bank="cue" data-path="draft.cues.${r.k}"`)}</label><input class="t" data-k="cue${r.k}" data-bind="draft.cues.${r.k}" placeholder="e.g. Marco narrates in his movie-trailer voice" value="${esc(d.cues[r.k]||'')}">`;
     return popHead(`Round ${idx} · ${r.title}`,r.k==='twist'?'How do slips get written and drawn?':'How do you want to randomize it?')+body+popFoot;}
-  if(pp.p==='prompt'){const mode=(d.prompts||{})[r.k]||'marco';const ai=!!S.caps.sample;
-    let body=`<div class="pmodes">${[['marco',"Marco's set",'The original, ready to go'],['custom','Make your own','Start from Marco\'s and rewrite'],['ai','Suggest for me',ai?'Claude writes it from your inside jokes':'Not available here']].map(([m,l,s])=>`<button class="choice ${mode===m?'sel':''}" data-act="setPromptMode" data-r="${r.k}" data-m="${m}" ${m==='ai'&&!ai?'disabled':''}><b>${l}</b><span class="small">${s}</span></button>`).join('')}</div>`;
+  if(pp.p==='prompt'){const ai=!!S.caps.sample;let mode=(d.prompts||{})[r.k]||'marco';if(mode==='ai'&&!ai)mode='custom';
+    let body=`<div class="pmodes ${ai?'':'two'}">${[['marco',"Marco's set",'The original, ready to go'],['custom','Make your own','Start from Marco\'s and rewrite'],...(ai?[['ai','Suggest for me','Claude writes it from your inside jokes']]:[])].map(([m,l,s])=>`<button class="choice ${mode===m?'sel':''}" data-act="setPromptMode" data-r="${r.k}" data-m="${m}" ${m==='ai'&&!ai?'disabled':''}><b>${l}</b><span class="small">${s}</span></button>`).join('')}</div>`;
     if(mode==='marco')body+=`<div class="item" style="background:#fff"><b class="small">Preview</b>${promptPreview(r.k)}</div>`;
     if(mode==='ai'){const f=S.ui.ai||(S.ui.ai={players:'',jokes:'',setting:'',spice:'cheeky',props:{dice:true,cards:true,cups:true,village:false,hat:false}});
       body+=`<div class="item" style="background:#fff"><label class="f" style="margin-top:0">Inside jokes, running bits, shared history</label><textarea class="t" rows="3" data-k="ai.jokes" data-bind="ui.ai.jokes" placeholder="Katie always plays piano at parties. The year the turkey caught fire…">${esc(f.jokes)}</textarea>
@@ -2351,7 +2353,7 @@ function howtoHTML(tab){
     <tr><td>9–12</td><td>Pair up into writing teams: two people, one movie, one name tag. Or add items to each list so nobody shares a hunk.</td><td>75–100 min</td></tr>
     <tr><td>13+</td><td>Teams of 3. Teams pitch together, and the bad acting becomes a feature.</td><td>~90 min</td></tr></table>
     <p class="small muted">Rule of thumb: about 45 minutes, plus 4–5 minutes per movie. Card race tip: use one rank of cards (four of a kind) per player or team, so 6 players means A, K, Q, J, 10, 9.</p>
-    <h4>Who it's for</h4><p class="small">Friends, family, office parties, a Friendsgiving that ran long. Pick the spice level when Claude writes your version, or keep Marco's version for a mixed crowd.</p>`;}
+    <h4>Who it's for</h4><p class="small">Friends, family, office parties, a Friendsgiving that ran long. Rewrite the names, jobs and hunks with your own inside jokes, or keep Marco's version for a mixed crowd.</p>`;}
   if(t==='tips'){b=`
     <ul class="htips">
     <li><b>Appoint a Director.</b> The host reads the read-aloud bits with full made-for-TV gravitas. A trembling voice is encouraged.</li>
@@ -2634,14 +2636,14 @@ async function initWeb(){
   {const pth=location.pathname.replace(/\/+$/,'').toLowerCase(),h=location.hash.toLowerCase();if(pth==='/hall-of-fame'||h==='#hall-of-fame')S.view='hof';else if(pth==='/admin'||h==='#admin')S.view='admin';}
   S.caps.user={id:async()=>null,can:async()=>true};
   S.caps.downloads={save({filename,data}){const blob=new Blob([data],{type:/\.pdf$/i.test(filename)?'application/pdf':'application/octet-stream'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);}};
-  try{const r=await fetch('/api/config',{cache:'no-store'});if(r.ok){S.caps.db=new WebDb();const c=await r.json();if(c.ai)S.caps.sample=webSample;}}catch(e){console.warn(e);}
+  try{const r=await fetch('/api/config',{cache:'no-store'});if(r.ok){S.caps.db=new WebDb();const c=await r.json();if(c.ai&&AI_FEATURES)S.caps.sample=webSample;}}catch(e){console.warn(e);}
   render();
 }
 (async function(){
   if(!window.claude||typeof window.claude.use!=='function'){initWeb();return;}
   try{
     const [db,user,sample,downloads]=await Promise.all([claude.use('db').catch(()=>null),claude.use('user').catch(()=>null),claude.use('sample').catch(()=>null),claude.use('downloads').catch(()=>null)]);
-    S.caps.db=db;S.caps.user=user;S.caps.sample=sample;S.caps.downloads=downloads;
+    S.caps.db=db;S.caps.user=user;S.caps.sample=AI_FEATURES?sample:null;S.caps.downloads=downloads;
     if(user&&typeof user.can==='function'){try{S.caps.canWrite=await user.can('data.write');}catch(e){}}
     if(S.view!=='game')render();else render();
   }catch(e){console.warn(e);}
