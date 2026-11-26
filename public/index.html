@@ -359,7 +359,7 @@ body[data-wrap="photo"] #flakes{display:block}
 .hlinks button{background:none;border:0;color:#fff;font:500 15px 'Hanken Grotesk','DM Sans',system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-shadow:0 1px 6px rgba(0,0,0,.7);padding:4px}
 .hpeek{margin:26px 14px 0;padding:16px 18px 18px;border-radius:16px;background:rgba(20,22,24,.58);backdrop-filter:blur(3px);color:#fff;text-align:center}
 .hp-eye{font:600 12px 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#f2c6cf}
-.hp-h{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:30px;line-height:1.1;margin:6px 0 8px;color:#fff;text-wrap:balance}
+.hp-h{font-family:'Redbell','Cortesia',cursive;font-weight:400;font-size:30px;line-height:1.1;margin:2px 0 14px;color:#fff;text-wrap:balance}
 .hpeek p{font:400 15.5px/1.45 'Hanken Grotesk',system-ui,sans-serif;margin:0 0 14px;text-wrap:pretty}
 .hp-btn b{font-size:28px}
 .sample-plot p{margin:0 0 10px;font-size:15.5px;line-height:1.5}
@@ -961,7 +961,6 @@ function vHome(){
     <button class="hbtn hb-blue" data-act="goSetup"><b>Make it your own!</b><span>You're the producer</span></button>
   </div>
   <section class="hpeek"><h2 class="hp-h">Previously on Blank for Christmas</h2>
-   <p>Four random draws, one stolen twist and a shameless pitch. Here's what one movie looks like by the end of the night.</p>
    <button class="hbtn hb-pink hp-btn" data-act="sample"><b>Show me a sample pitch!</b></button></section>
   ${saved?`<div class="hlinks"><button data-act="resume">Resume the game in progress</button></div>`:''}
   <footer class="hcredit"><div>An original game from the mind of</div><img src="${FUNHOUSE_LOGO_WHITE}" alt="Marco's Funhouse" width="640" height="290">${mfLinks()}${mfSupport()}</footer>
